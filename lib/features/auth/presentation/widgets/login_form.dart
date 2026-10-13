@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:interactive_notifications/core/navigation/main_environment.dart';
+import 'package:interactive_notifications/core/style/container.dart';
 import 'package:interactive_notifications/features/auth/data/auth_repository.dart';
 
 import '../../../../core/style/text_field.dart';
@@ -39,97 +40,106 @@ class _LoginFormState extends State<LoginForm> {
         children: [
           Spacer(),
 
-          LoginHeader(),
+          Container(
+            decoration: defaultBoxDecoration(Theme.of(context).colorScheme.surfaceContainer),
+            padding: const EdgeInsetsGeometry.all(25),
 
-          const SizedBox(height: 70),
+            child: Column(
+              children: [
+                LoginHeader(),
 
-          TextFormField(
-            controller: _usernameController,
-            enabled: !_loginLoading,
-            decoration: InputDecoration(
-              labelText: 'Username',
-              border: defaultTextInputBorder(),
-            ),
-            validator: (text) {
-              if (text == null || text.isEmpty) {
-                return 'Please enter your username';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 20),
+                const SizedBox(height: 70),
 
-          TextFormField(
-            controller: _passwordController,
-            enabled: !_loginLoading,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              border: defaultTextInputBorder(),
-            ),
-            validator: (text) {
-              if (text == null || text.isEmpty) {
-                return 'Please enter your password';
-              }
-              return null;
-            },
-          ),
-
-          if (_loginErrorMsg != null) ...[
-            const SizedBox(height: 5),
-            Text(
-              _loginErrorMsg!,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-            const SizedBox(height: 5),
-          ] else
-            const SizedBox(height: 30),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _loginLoading
-                    ? Theme.of(context).colorScheme.onSurfaceVariant
-                    : Theme.of(context).primaryColor,
-                minimumSize: const Size(120, 55),
-              ),
-              onPressed: () async {
-                if (_loginLoading) return;
-                if (!_formKey.currentState!.validate()) return;
-
-                setState(() {
-                  _loginLoading = true;
-                  _loginErrorMsg = null;
-                });
-
-                try {
-                  await _authRepository.login(
-                    username: _usernameController.text,
-                    password: _passwordController.text,
-                  );
-                  if (!context.mounted) return;
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => MainEnvironment()),
-                  );
-                } catch (e) {
-                  if (!context.mounted) return;
-                  setState(() {
-                    _loginErrorMsg = e.toString();
-                    _loginLoading = false;
-                  });
-                }
-              },
-              child: Text(
-                'LOG IN',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
+                TextFormField(
+                  controller: _usernameController,
+                  enabled: !_loginLoading,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    border: defaultTextInputBorder(),
+                  ),
+                  validator: (text) {
+                    if (text == null || text.isEmpty) {
+                      return 'Please enter your username';
+                    }
+                    return null;
+                  },
                 ),
-              ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: _passwordController,
+                  enabled: !_loginLoading,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: defaultTextInputBorder(),
+                  ),
+                  validator: (text) {
+                    if (text == null || text.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
+                ),
+
+                if (_loginErrorMsg != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    _loginErrorMsg!,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                ] else
+                  const SizedBox(height: 30),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _loginLoading
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : Theme.of(context).primaryColor,
+                      minimumSize: const Size(120, 55),
+                    ),
+                    onPressed: () async {
+                      if (_loginLoading) return;
+                      if (!_formKey.currentState!.validate()) return;
+
+                      setState(() {
+                        _loginLoading = true;
+                        _loginErrorMsg = null;
+                      });
+
+                      try {
+                        await _authRepository.login(
+                          username: _usernameController.text,
+                          password: _passwordController.text,
+                        );
+                        if (!context.mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => MainEnvironment()),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        setState(() {
+                          _loginErrorMsg = e.toString();
+                          _loginLoading = false;
+                        });
+                      }
+                    },
+                    child: Text(
+                      'LOG IN',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 

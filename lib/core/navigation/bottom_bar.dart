@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:interactive_notifications/core/style/container.dart';
+import 'package:interactive_notifications/core/util/constants.dart';
+
 
 class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -10,8 +13,6 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color _backgroundColor = Color(0xFFF6F2EA);
-  static const Color _activeColor = Color(0xFF34C759);
   static const Color _inactiveColor = Color(0xFF8E8E93);
   static const Color _activeBackground = Color(0x66D4FFD0);
 
@@ -23,24 +24,16 @@ class CustomBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color activeColor = Theme.of(context).colorScheme.primary;
+    Color backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
         child: Container(
           height: 64,
-          decoration: BoxDecoration(
-            color: _backgroundColor,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 4,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: defaultBoxDecoration(backgroundColor),
           child: Padding(
             padding: const EdgeInsets.all(2),
             child: Row(
@@ -57,7 +50,7 @@ class CustomBottomNavigation extends StatelessWidget {
                         color: isSelected
                             ? _activeBackground
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(defaultCornerRadius),
                         border: isSelected
                             ? Border.all(
                                 color: Colors.white.withValues(alpha: 0.9),
@@ -71,8 +64,8 @@ class CustomBottomNavigation extends StatelessWidget {
                           duration: const Duration(milliseconds: 250),
                           child: Icon(
                             _icons[index],
-                            size: 25,
-                            color: isSelected ? _activeColor : _inactiveColor,
+                            size: defaultIconPixelSize,
+                            color: isSelected ? activeColor : _inactiveColor,
                           ),
                         ),
                       ),

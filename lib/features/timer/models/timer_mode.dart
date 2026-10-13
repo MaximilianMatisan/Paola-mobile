@@ -1,0 +1,5 @@
+
+enum TimerMode {
+  stopwatch,
+  pomodoro,
+}

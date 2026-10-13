@@ -16,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsetsGeometry.all(35),
+        padding: const EdgeInsetsGeometry.all(15),
         child: LoginForm()
       ),
     );

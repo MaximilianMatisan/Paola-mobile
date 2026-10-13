@@ -62,10 +62,6 @@ class _SelfAssessmentPageState extends State<SelfAssessmentPage> with WidgetsBin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: .center,
