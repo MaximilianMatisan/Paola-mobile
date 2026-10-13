@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:interactive_notifications/features/timer/presentation/home_page.dart';
 
 import '../../features/settings/presentation/settings_page.dart';
+import 'bottom_bar.dart';
 
 class MainEnvironment extends StatefulWidget {
   const MainEnvironment({super.key});
@@ -13,23 +14,19 @@ class MainEnvironment extends StatefulWidget {
 class _MainEnvironmentState extends State<MainEnvironment> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [MyHomePage(), SettingsPage()];
+  final List<Widget> _pages = const [MyHomePage(), MyHomePage(), SettingsPage()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: CustomBottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
       ),
     );
   }
