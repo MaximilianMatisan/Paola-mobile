@@ -12,8 +12,11 @@ class AppTheme {
       primary: const Color(0xFF34C759),
       onPrimary: Colors.white,
       secondary: const Color(0xFF00FF40),
+      tertiary: const Color(0xFF1BB241),
       surface: const Color(0xFFFFFBF3),
       surfaceContainer: const Color(0xFFF6F2EA),
+      surfaceContainerHigh: const Color(0xFFFDF8ED),
+      onSurface: const Color(0xFF444444)
     );
 
     return ThemeData(

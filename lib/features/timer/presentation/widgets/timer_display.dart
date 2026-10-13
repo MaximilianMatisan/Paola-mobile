@@ -10,6 +10,7 @@ class TimerDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: .min,
       children: [
         const Text('Time passed'),
         Text(

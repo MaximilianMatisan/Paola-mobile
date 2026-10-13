@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:interactive_notifications/core/style/container.dart';
 import 'package:interactive_notifications/features/timer/presentation/self_assessment_page.dart';
 import 'package:interactive_notifications/core/util/constants.dart';
+import 'package:interactive_notifications/features/timer/presentation/widgets/progress_ring.dart';
 import 'package:interactive_notifications/features/timer/util/timer_bridge.dart';
 import 'package:live_activities/live_activities.dart';
 
@@ -228,7 +229,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
               crossAxisAlignment: .center,
               mainAxisSize: .min,
               children: [
-                TimerDisplay(secondsPassed: _secondsPassed),
+                ProgressRingWidget(secondsPassed: _secondsPassed),
                 TimerButtons(
                   isTimerSessionActive: _secondsPassed > 0,
                   isTimerActive: !_isPaused,

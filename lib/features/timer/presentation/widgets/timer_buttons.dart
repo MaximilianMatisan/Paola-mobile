@@ -27,7 +27,7 @@ class TimerButtons extends StatelessWidget {
         _timerButton(
           onPressedToggle,
           isTimerActive ? 'PAUSE' : 'START',
-          isTimerActive ? Icons.pause : Icons.play_arrow,
+          isTimerActive ? Icons.pause_rounded : Icons.play_arrow_rounded,
           onPrimaryCol,
           primaryCol,
         ),
@@ -36,7 +36,7 @@ class TimerButtons extends StatelessWidget {
           _timerButton(
             onPressedReset,
             'STOP',
-            Icons.stop,
+            Icons.stop_rounded,
             primaryCol,
             onPrimaryCol,
           ),
