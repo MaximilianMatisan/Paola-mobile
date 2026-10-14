@@ -68,7 +68,7 @@ class PillToggle<T extends Displayable> extends StatelessWidget {
                         alignment: Alignment.center,
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 250),
-                          style: TextStyle(
+                          style:Theme.of(context).textTheme.bodyMedium!.copyWith(
                             color: selected
                                 ? Colors.white
                                 : colorScheme.onSurfaceVariant,

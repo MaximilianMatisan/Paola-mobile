@@ -23,6 +23,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      fontFamily: 'FiraSans',
       scaffoldBackgroundColor: const Color(0xFFFFFCF6),
     );
   }
