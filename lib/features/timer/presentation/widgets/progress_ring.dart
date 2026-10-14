@@ -5,8 +5,9 @@ import 'package:interactive_notifications/core/style/container.dart';
 import 'package:interactive_notifications/features/timer/presentation/widgets/timer_display.dart';
 
 class ProgressRingWidget extends StatelessWidget {
-  static const double _totalDiameter = 300.0;
-  static const double _progressIndicatorDiameter = _totalDiameter - 30;
+  static const double _totalDiameter = 300.0; // including the container
+  static const double _padding = 15; // Between progress circle and container
+
   static const int _secondsForFullRing = 60 * 60; // 1h
 
   final int secondsPassed;
@@ -26,20 +27,16 @@ class ProgressRingWidget extends StatelessWidget {
       height: _totalDiameter,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         boxShadow: [defaultBoxShadow()],
       ),
-      child: SizedBox(
-        width: _progressIndicatorDiameter,
-        height: _progressIndicatorDiameter,
-        child: CustomPaint(
-          painter: _RingPainter(
-            progress: progressValue,
-            topLeftActiveColor: secondaryColor,
-            bottomRightActiveColor: tertiaryColor,
-          ),
-          child: Center(child: TimerDisplay(secondsPassed: secondsPassed)),
+      child: CustomPaint(
+        painter: _RingPainter(
+          progress: progressValue,
+          topLeftActiveColor: secondaryColor,
+          bottomRightActiveColor: tertiaryColor,
         ),
+        child: Center(child: TimerDisplay(secondsPassed: secondsPassed)),
       ),
     );
   }
@@ -62,7 +59,7 @@ class _RingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
-    final radius = (size.width - lineWeight) / 2;
+    final radius = (size.width - lineWeight) / 2 - ProgressRingWidget._padding;
     final Rect rect = Rect.fromCircle(center: center, radius: radius);
 
     final inactiveRingPaint = Paint()
