@@ -53,7 +53,7 @@ class CustomBottomNavigation extends StatelessWidget {
                         borderRadius: BorderRadius.circular(defaultCornerRadius),
                         border: isSelected
                             ? Border.all(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white,
                                 width: 1.5,
                               )
                             : null,

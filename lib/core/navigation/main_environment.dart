@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:interactive_notifications/features/home/presentation/home_page.dart';
 import 'package:interactive_notifications/features/timer/presentation/timer_page.dart';
 
 import '../../features/settings/presentation/settings_page.dart';
@@ -14,7 +15,7 @@ class MainEnvironment extends StatefulWidget {
 class _MainEnvironmentState extends State<MainEnvironment> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [TimerPage(), TimerPage(), SettingsPage()];
+  final List<Widget> _pages = const [HomePage(), TimerPage(), SettingsPage()];
 
   @override
   Widget build(BuildContext context) {
