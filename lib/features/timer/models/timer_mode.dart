@@ -1,5 +1,16 @@
+import 'package:interactive_notifications/core/util/displayable.dart';
 
-enum TimerMode {
+enum TimerMode implements Displayable{
   stopwatch,
-  pomodoro,
+  pomodoro;
+
+  @override
+  String toDisplayableString() {
+    switch (this) {
+      case stopwatch:
+        return "STOPWATCH";
+      case pomodoro:
+        return "POMODORO";
+    }
+  }
 }

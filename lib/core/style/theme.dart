@@ -16,7 +16,8 @@ class AppTheme {
       surface: const Color(0xFFFFFBF3),
       surfaceContainer: const Color(0xFFF6F2EA),
       surfaceContainerHigh: const Color(0xFFFDF8ED),
-      onSurface: const Color(0xFF444444)
+      onSurface: const Color(0xFF444444),
+      onSurfaceVariant: const Color(0xFF8E8E93)
     );
 
     return ThemeData(

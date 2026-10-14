@@ -56,7 +56,7 @@ class TimerButtons extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: largeIconPixelSize),
-      label: Text(label, style: TextStyle(fontSize: 18)),
+      label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,

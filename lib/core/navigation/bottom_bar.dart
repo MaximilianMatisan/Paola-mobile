@@ -13,7 +13,6 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color _inactiveColor = Color(0xFF8E8E93);
   static const Color _activeBackground = Color(0x66D4FFD0);
 
   static const List<IconData> _icons = [
@@ -26,6 +25,7 @@ class CustomBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     Color activeColor = Theme.of(context).colorScheme.primary;
     Color backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
+    Color inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return SafeArea(
       top: false,
@@ -65,7 +65,7 @@ class CustomBottomNavigation extends StatelessWidget {
                           child: Icon(
                             _icons[index],
                             size: defaultIconPixelSize,
-                            color: isSelected ? activeColor : _inactiveColor,
+                            color: isSelected ? activeColor : inactiveColor,
                           ),
                         ),
                       ),
