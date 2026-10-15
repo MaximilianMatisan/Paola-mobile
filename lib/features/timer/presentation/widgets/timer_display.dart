@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../../util/format_time.dart';
 
-class TimerDisplay extends StatelessWidget {
+class TimerTextDisplay extends StatelessWidget {
   final int secondsPassed;
-  const TimerDisplay({super.key, required this.secondsPassed});
+  const TimerTextDisplay({super.key, required this.secondsPassed});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,10 @@ class TimerDisplay extends StatelessWidget {
         const Text('Time passed'),
         Text(
           formatTime(secondsPassed),
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: TextStyle (
+            fontWeight: FontWeight.bold,
+            fontSize:40
+          ),
         )
     ]);
   }

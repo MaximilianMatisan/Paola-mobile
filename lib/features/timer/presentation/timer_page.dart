@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/style/container.dart';
-import 'package:interactive_notifications/features/timer/models/timer_mode.dart';
+import 'package:interactive_notifications/features/timer/models/mood.dart';
 import 'package:interactive_notifications/features/timer/presentation/self_assessment_page.dart';
 import 'package:interactive_notifications/core/util/constants.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/progress_ring.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/pill_toggle.dart';
+import 'package:interactive_notifications/features/timer/presentation/widgets/stacked_cards.dart';
+import 'package:interactive_notifications/features/timer/presentation/widgets/timer_element.dart';
 import 'package:interactive_notifications/features/timer/util/timer_bridge.dart';
 import 'package:live_activities/live_activities.dart';
-
-import 'widgets/timer_buttons.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -30,12 +27,6 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   int _secondsPassed = 0;
   DateTime? _currentSegmentStartTime;
   bool _isPaused = true;
-
-  List<TimerMode> _timerModeOptions = [
-    TimerMode.stopwatch,
-    TimerMode.pomodoro
-  ];
-  int _selectedTimerModeIndex = 0;
 
   @override
   void initState() {
@@ -91,7 +82,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     final tempIsPaused = nativeState['isPaused'] as bool;
     final tempAccumulatedSeconds = nativeState['accumulatedSeconds'] as int;
     final tempCurrentSegmentStartTime =
-    nativeState['currentSegmentStartTimeMs'] as int;
+        nativeState['currentSegmentStartTimeMs'] as int;
 
     setState(() {
       _isPaused = tempIsPaused;
@@ -104,50 +95,32 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       _secondsPassed = _isPaused
           ? _accumulatedSeconds
           : _accumulatedSeconds +
-          DateTime
-              .now()
-              .difference(_currentSegmentStartTime!)
-              .inSeconds;
+                DateTime.now().difference(_currentSegmentStartTime!).inSeconds;
     });
 
     _timer?.cancel();
     _timer = _isPaused
         ? null
         : Timer.periodic(
-      const Duration(seconds: 1),
-          (_) => _recalculateSeconds(),
-    );
+            const Duration(seconds: 1),
+            (_) => _recalculateSeconds(),
+          );
   }
 
   Future<void> _startLiveActivity(DateTime now) async {
     _activityId = await _liveActivityPlugin
-        .createActivity(DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString(), {
-      'backgroundColor': Theme
-          .of(
-        context,
-      )
-          .colorScheme
-          .inversePrimary
-          .toARGB32(),
-      'containerColor': Theme
-          .of(
-        context,
-      )
-          .colorScheme
-          .secondaryContainer
-          .toARGB32(),
-      'textColor': Theme
-          .of(context)
-          .colorScheme
-          .primary
-          .toARGB32(),
-      'currentSegmentStartTimeMs': now.millisecondsSinceEpoch.toString(),
-      'accumulatedSeconds': _accumulatedSeconds.toString(),
-      'isPaused': _isPaused,
-    }, iOSEnableRemoteUpdates: false);
+        .createActivity(DateTime.now().millisecondsSinceEpoch.toString(), {
+          'backgroundColor': Theme.of(
+            context,
+          ).colorScheme.inversePrimary.toARGB32(),
+          'containerColor': Theme.of(
+            context,
+          ).colorScheme.secondaryContainer.toARGB32(),
+          'textColor': Theme.of(context).colorScheme.primary.toARGB32(),
+          'currentSegmentStartTimeMs': now.millisecondsSinceEpoch.toString(),
+          'accumulatedSeconds': _accumulatedSeconds.toString(),
+          'isPaused': _isPaused,
+        }, iOSEnableRemoteUpdates: false);
     print('Live Activity started: $_activityId');
   }
 
@@ -175,7 +148,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
         _timer = Timer.periodic(
           const Duration(milliseconds: 500),
-              (_) => _recalculateSeconds(),
+          (_) => _recalculateSeconds(),
         );
       } else {
         _currentSegmentStartTime = null;
@@ -195,8 +168,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
 
   void _recalculateSeconds() {
     if (!_isPaused && _currentSegmentStartTime != null) {
-      int elapsedInCurSegment = DateTime
-          .now()
+      int elapsedInCurSegment = DateTime.now()
           .difference(_currentSegmentStartTime!)
           .inSeconds;
       setState(() {
@@ -243,42 +215,34 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: EdgeInsetsGeometry.all(10),
-          child: Container(
-            decoration: defaultBoxDecoration(Theme
-                .of(context)
-                .colorScheme
-                .surfaceContainer),
-            padding: EdgeInsetsGeometry.all(20.0),
-            child: Column(
-              mainAxisAlignment: .center,
-              crossAxisAlignment: .center,
-              mainAxisSize: .min,
-              children: [
-                PillToggle(options: _timerModeOptions,
-                    selectedIndex: _selectedTimerModeIndex,
-                    onChanged: ((int newSelectionIndex) {
-                      setState(() {
-                        _selectedTimerModeIndex = newSelectionIndex;
-                      });
-                    }),
-                  isAllowedToChangeOption: _secondsPassed == 0,
-                ),
+          child: Column(
+            mainAxisAlignment: .center,
+            children: [
+              TimerElement(
+                secondsPassed: _secondsPassed,
+                isPaused: _isPaused,
+                onPressedToggle: _toggleTimer,
+                onPressedReset: _endLearningTimer,
+              ),
 
-                Padding(
-                  padding: EdgeInsetsGeometry.all(20),
-                  child: ProgressRingWidget(secondsPassed: _secondsPassed),
-                ),
-                TimerButtons(
-                  isTimerSessionActive: _secondsPassed > 0,
-                  isTimerActive: !_isPaused,
-                  onPressedToggle: _toggleTimer,
-                  onPressedReset: _endLearningTimer,
-                ),
-              ],
-            ),
+              Spacer(),
+              StackedCard(
+                label: 'Yesterday',
+                value: '55 Minutes',
+                mood: Mood.bad,
+                onTap: () => debugPrint('tapped history card'),
+              ),
+              Spacer(),
+            ],
           ),
         ),
       ),

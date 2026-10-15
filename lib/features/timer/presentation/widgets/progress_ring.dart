@@ -36,7 +36,7 @@ class ProgressRingWidget extends StatelessWidget {
           topLeftActiveColor: secondaryColor,
           bottomRightActiveColor: tertiaryColor,
         ),
-        child: Center(child: TimerDisplay(secondsPassed: secondsPassed)),
+        child: Center(child: TimerTextDisplay(secondsPassed: secondsPassed)),
       ),
     );
   }
