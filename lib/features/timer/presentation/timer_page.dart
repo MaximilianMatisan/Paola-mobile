@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:interactive_notifications/features/study_history/presentation/study_history_page.dart';
 import 'package:interactive_notifications/features/timer/models/mood.dart';
 import 'package:interactive_notifications/features/timer/presentation/self_assessment_page.dart';
 import 'package:interactive_notifications/core/util/constants.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/stacked_cards.dart';
+import 'package:interactive_notifications/features/study_history/presentation/widgets/stacked_cards.dart';
 import 'package:interactive_notifications/features/timer/presentation/widgets/timer_element.dart';
 import 'package:interactive_notifications/features/timer/util/timer_bridge.dart';
 import 'package:live_activities/live_activities.dart';
@@ -12,7 +13,7 @@ import 'package:live_activities/live_activities.dart';
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
 
-  final String title = 'Study Timer';
+  final String title = 'Timer';
 
   @override
   State<TimerPage> createState() => _TimerPageState();
@@ -57,7 +58,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     if (moodString != null) {
       setState(_resetTimerVariables);
       _activityId = null;
-      print('$moodString mood assessment');
+      debugPrint('$moodString mood assessment');
       return;
     }
 
@@ -121,7 +122,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
           'accumulatedSeconds': _accumulatedSeconds.toString(),
           'isPaused': _isPaused,
         }, iOSEnableRemoteUpdates: false);
-    print('Live Activity started: $_activityId');
+    debugPrint('Live Activity started: $_activityId');
   }
 
   Future<void> _updateLiveActivity(DateTime now) async {
@@ -130,13 +131,13 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       'accumulatedSeconds': _accumulatedSeconds.toString(),
       'isPaused': _isPaused,
     });
-    print('Live Activity updated!');
+    debugPrint('Live Activity updated!');
   }
 
   Future<void> _endLiveActivities() async {
     await _liveActivityPlugin.endAllActivities();
     _activityId = null;
-    print('Live Activities ended!');
+    debugPrint('Live Activities ended!');
   }
 
   void _toggleTimer() {
@@ -210,6 +211,12 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       MaterialPageRoute(builder: (context) => SelfAssessmentPage()),
     );
   }
+  void _switchToStudyHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => StudyHistoryPage()),
+    );
+  }
 
   // Rerun if setState is called
   @override
@@ -218,7 +225,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Text(
           widget.title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 40),
         ),
       ),
       body: Center(
@@ -239,7 +246,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
                 label: 'Yesterday',
                 value: '55 Minutes',
                 mood: Mood.bad,
-                onTap: () => debugPrint('tapped history card'),
+                onTap: () => _switchToStudyHistory(),
               ),
               Spacer(),
             ],

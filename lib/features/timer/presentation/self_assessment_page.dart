@@ -44,7 +44,7 @@ class _SelfAssessmentPageState extends State<SelfAssessmentPage> with WidgetsBin
 
     if (moodString != null) {
       _rateStudySession();
-      print('$moodString mood assessment');
+      debugPrint('$moodString mood assessment');
     }
   }
 

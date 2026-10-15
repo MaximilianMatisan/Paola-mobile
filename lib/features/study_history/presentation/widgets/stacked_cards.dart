@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:interactive_notifications/core/style/container.dart';
 import 'package:interactive_notifications/core/util/constants.dart';
 
-import '../../models/mood.dart';
+import '../../../timer/models/mood.dart';
 
 class StackedCard extends StatelessWidget {
   const StackedCard({
