@@ -1,0 +1,43 @@
+name: Build Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # Same version as local development (Dart SDK ^3.12.2).
+          flutter-version: 3.47.0
+          cache: true
+      # .env is bundled as an asset but not committed. Set the repository
+      # variable API_URL (Settings > Secrets and variables > Actions >
+      # Variables) to a server the phone can reach; otherwise the Android
+      # emulator default is used.
+      - name: Create .env
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "::warning::Repository variable API_URL not set, using emulator default"
+            API_URL=http://10.0.2.2:3000
+          fi
+          echo "API_URL=$API_URL" > .env
+          cat .env
+      - run: flutter pub get
+      # Release build (smaller and faster than debug); Flutter signs it with
+      # the debug key by default, which is enough for sideloading.
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paola-mobile-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
