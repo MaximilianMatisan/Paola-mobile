@@ -20,14 +20,16 @@
 // Login itself goes through AuthRepository (dio), which hands the session
 // cookie over via [PaolaApi.takeSessionCookie].
 //
-// The base URL is API_URL from .env plus the Next.js basePath "/paola", the
-// same server ApiClient talks to.
+// The server is API_URL from .env, or the address entered on the login
+// screen (e.g. the dev machine's LAN IP). Requests go to it plus the Next.js
+// basePath "/paola"; ApiClient (dio) is pointed at the same server.
 
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:interactive_notifications/core/network/api_client.dart';
 import 'package:interactive_notifications/core/network/api_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -99,23 +101,59 @@ class PaolaApi {
 
   static const _cookieName = 'paola_session';
   static const _prefsCookie = 'api_session_cookie';
+  static const _prefsServerUrl = 'api_server_url';
   static const _basePath = '/paola';
   static const _timeout = Duration(seconds: 10);
 
-  late final String baseUrl;
+  /// Server from .env, e.g. http://localhost:3000.
+  late final String defaultServerUrl;
+
+  /// Server in use: [defaultServerUrl] or the one entered on the login screen.
+  late String serverUrl;
   String? _sessionCookie;
 
   bool get loggedIn => _sessionCookie != null;
 
-  /// Reads the server URL from .env and restores a saved session.
+  String get _baseUrl => serverUrl + _basePath;
+
+  /// Reads the server URL from .env (or the saved override) and restores a
+  /// saved session.
   Future<void> init() async {
     final url = dotenv.maybeGet('API_URL');
     if (url == null || url.trim().isEmpty) {
       throw StateError('API_URL is missing in .env');
     }
-    baseUrl = url.trim().replaceAll(RegExp(r'/+$'), '') + _basePath;
+    defaultServerUrl = _normalize(url);
     final prefs = await SharedPreferences.getInstance();
+    _useServer(prefs.getString(_prefsServerUrl) ?? defaultServerUrl);
     _sessionCookie = prefs.getString(_prefsCookie);
+  }
+
+  static String _normalize(String url) =>
+      url.trim().replaceAll(RegExp(r'/+$'), '');
+
+  /// Uses [url] instead of the .env server; empty resets to the default.
+  Future<void> setServerUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    final normalized = _normalize(url);
+    if (normalized.isEmpty || normalized == defaultServerUrl) {
+      _useServer(defaultServerUrl);
+      await prefs.remove(_prefsServerUrl);
+      return;
+    }
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw const ApiException(
+        message: 'Invalid URL, e.g. http://192.168.1.20:3000',
+      );
+    }
+    _useServer(normalized);
+    await prefs.setString(_prefsServerUrl, normalized);
+  }
+
+  void _useServer(String url) {
+    serverUrl = url;
+    ApiClient.instance.dio.options.baseUrl = url;
   }
 
   Future<void> _persist() async {
@@ -135,7 +173,7 @@ class PaolaApi {
   /// Appends the API path to the base URL, keeping its path prefix
   /// (Next.js basePath "/paola").
   Uri _uri(String path, [Map<String, String>? query]) {
-    final base = Uri.parse(baseUrl);
+    final base = Uri.parse(_baseUrl);
     return base.replace(path: '${base.path}$path', queryParameters: query);
   }
 

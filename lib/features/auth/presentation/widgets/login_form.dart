@@ -5,6 +5,7 @@ import 'package:interactive_notifications/features/auth/data/auth_repository.dar
 
 import '../../../../core/style/text_field.dart';
 import 'login_header.dart';
+import 'server_button.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -153,6 +154,7 @@ class _LoginFormState extends State<LoginForm> {
               child: const Text('Contact'),
             ),
           ),
+          Center(child: ServerButton(enabled: !_loginLoading)),
         ],
       ),
     );
