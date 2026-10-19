@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/features/home/presentation/home_page.dart';
-import 'package:interactive_notifications/features/timer/presentation/timer_page.dart';
+import 'package:interactive_notifications/features/home/presentation/home_screen.dart';
+import 'package:interactive_notifications/features/study_history/presentation/history_screen.dart';
+import 'package:interactive_notifications/features/timer/presentation/timer_screen.dart';
 
-import '../../features/settings/presentation/settings_page.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import 'bottom_bar.dart';
 
 class MainEnvironment extends StatefulWidget {
@@ -13,19 +14,36 @@ class MainEnvironment extends StatefulWidget {
 }
 
 class _MainEnvironmentState extends State<MainEnvironment> {
-  int _currentIndex = 0;
+  // Opens on the timer.
+  int _currentIndex = 1;
 
-  final List<Widget> _pages = const [HomePage(), TimerPage(), SettingsPage()];
+  // The history has no tab; it is opened from below the timer and belongs to
+  // the timer tab.
+  bool _showHistory = false;
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      const HomeScreen(),
+      // IndexedStack keeps the timer running while the history is open.
+      IndexedStack(
+        index: _showHistory ? 1 : 0,
+        children: [
+          TimerScreen(onOpenHistory: () => setState(() => _showHistory = true)),
+          HistoryScreen(onBack: () => setState(() => _showHistory = false)),
+        ],
+      ),
+      const SettingsScreen(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: CustomBottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
+            _showHistory = false;
           });
         },
       ),
