@@ -17,8 +17,6 @@ void main() async {
     child: _ErrorText('Build error', details.exception, details.stack),
   );
 
-  // Each step gets a timeout, so a hang shows up as an error too. Without
-  // this a failed start leaves the phone on a black launch screen.
   final steps = <String, Future<void> Function()>{
     'Loading .env': () => dotenv.load(fileName: ".env"),
     'Restoring session': PaolaApi.instance.init,
@@ -37,6 +35,17 @@ void main() async {
     }
   }
   runApp(const MyApp());
+  _loadDarkMode();
+}
+
+/// Applies the saved dark mode preference. Offline the app keeps prefs
+Future<void> _loadDarkMode() async {
+  if (!PaolaApi.instance.loggedIn) return;
+  try {
+    final prefs = await PaolaApi.instance.preferences();
+    final dark = prefs['dark_mode'] == 1 || prefs['dark_mode'] == true;
+    AppTheme.mode.value = dark ? ThemeMode.dark : ThemeMode.light;
+  } catch (_) {}
 }
 
 class MyApp extends StatelessWidget {
@@ -44,13 +53,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Paola Mobile',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      home: PaolaApi.instance.loggedIn
-          ? const MainEnvironment()
-          : const LoginPage(),
+    return ValueListenableBuilder(
+      valueListenable: AppTheme.mode,
+      builder: (context, mode, _) => MaterialApp(
+        title: 'Paola Mobile',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: mode,
+        home: PaolaApi.instance.loggedIn
+            ? const MainEnvironment()
+            : const LoginPage(),
+      ),
     );
   }
 }

@@ -341,10 +341,10 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     final configuring = _configuring;
 
     return Scaffold(
-      backgroundColor: PaolaColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          color: PaolaColors.primary,
+          color: context.colors.primary,
           onRefresh: () async {
             setState(() => _yesterday = _loadYesterday());
             await _yesterday.catchError((_) => Duration.zero);
@@ -436,14 +436,14 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         ),
         // Bottom padding matches the unit label, so the colon sits on the
         // digits' centre line.
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(2, 0, 2, 18),
           child: Text(
             ':',
             style: TextStyle(
               fontSize: 56,
               fontWeight: FontWeight.w300,
-              color: PaolaColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ),
@@ -462,18 +462,18 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     if (pomodoro) ...[
       Row(
         children: [
-          const Text(
+          Text(
             'Break',
-            style: TextStyle(fontSize: 15, color: PaolaColors.textSecondary),
+            style: TextStyle(fontSize: 15, color: context.colors.textSecondary),
           ),
           const Spacer(),
           PopupMenuButton<int>(
             initialValue: _breakMinutes,
-            color: PaolaColors.surface,
+            color: context.colors.surface,
             tooltip: 'Break length',
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(PaolaRadius.control),
-              side: const BorderSide(color: PaolaColors.line),
+              side: BorderSide(color: context.colors.line),
             ),
             onSelected: (m) => setState(() => _breakMinutes = m),
             itemBuilder: (_) => [
@@ -483,8 +483,8 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
             child: Container(
               padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
               decoration: BoxDecoration(
-                color: PaolaColors.surface,
-                border: Border.all(color: PaolaColors.line),
+                color: context.colors.surface,
+                border: Border.all(color: context.colors.line),
                 borderRadius: BorderRadius.circular(PaolaRadius.control),
               ),
               child: Row(
@@ -492,16 +492,16 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                 children: [
                   Text(
                     _breakLabel(_breakMinutes),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: PaolaColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Icon(
+                  Icon(
                     Icons.keyboard_arrow_down,
                     size: 18,
-                    color: PaolaColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
@@ -585,13 +585,13 @@ class _MovementStatus extends StatelessWidget {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _Dot(available ? PaolaColors.primary : PaolaColors.track),
+          _Dot(available ? context.colors.primary : context.colors.track),
           const SizedBox(width: 8),
           Text(
             available ? 'Phone resting' : 'Motion sensor unavailable',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: PaolaColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -600,29 +600,29 @@ class _MovementStatus extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: PaolaColors.errorContainer,
+        color: context.colors.errorContainer,
         borderRadius: BorderRadius.circular(PaolaRadius.control),
       ),
       child: Row(
         children: [
-          const _Dot(PaolaColors.error),
+          _Dot(context.colors.error),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Phone moved. Pausing in $countdown s',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: PaolaColors.error,
+                color: context.colors.error,
               ),
             ),
           ),
           Text(
             '$countdown',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: PaolaColors.error,
+              color: context.colors.error,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
@@ -663,8 +663,8 @@ class _ModeToggle extends StatelessWidget {
     return Container(
       height: 36,
       decoration: BoxDecoration(
-        color: PaolaColors.surface,
-        border: Border.all(color: PaolaColors.line),
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.line),
         borderRadius: BorderRadius.circular(PaolaRadius.control),
       ),
       clipBehavior: Clip.antiAlias,
@@ -678,20 +678,20 @@ class _ModeToggle extends StatelessWidget {
                   duration: const Duration(milliseconds: 150),
                   alignment: Alignment.center,
                   color: m != mode
-                      ? PaolaColors.surface
+                      ? context.colors.surface
                       : active
-                      ? PaolaColors.textPrimary
-                      : PaolaColors.track,
+                      ? context.colors.textPrimary
+                      : context.colors.track,
                   child: Text(
                     m == TimerMode.pomodoro ? 'Pomodoro' : 'Stopwatch',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: m == mode ? FontWeight.w500 : FontWeight.w400,
                       color: m != mode
-                          ? PaolaColors.textSecondary
+                          ? context.colors.textSecondary
                           : active
-                          ? PaolaColors.onTextPrimary
-                          : PaolaColors.textPrimary,
+                          ? context.colors.onTextPrimary
+                          : context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -719,7 +719,7 @@ class _Dial extends StatelessWidget {
           return SizedBox.square(
             dimension: size,
             child: CustomPaint(
-              painter: _RingPainter(progress.clamp(0.0, 1.0)),
+              painter: _RingPainter(progress.clamp(0.0, 1.0), context.colors),
               child: Padding(
                 padding: EdgeInsets.all(size * 0.14),
                 child: FittedBox(fit: BoxFit.scaleDown, child: child),
@@ -745,19 +745,19 @@ class _DialTime extends StatelessWidget {
       children: [
         Text(
           time,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 64,
             fontWeight: FontWeight.w300,
-            color: PaolaColors.textPrimary,
+            color: context.colors.textPrimary,
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
         if (label != null)
           Text(
             label!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: PaolaColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
       ],
@@ -855,12 +855,12 @@ class _DigitSetterState extends State<_DigitSetter> {
             ],
             onChanged: _onTyped,
             onTapOutside: (_) => _focus.unfocus(),
-            cursorColor: PaolaColors.primary,
-            style: const TextStyle(
+            cursorColor: context.colors.primary,
+            style: TextStyle(
               fontSize: 56,
               height: 1.1,
               fontWeight: FontWeight.w300,
-              color: PaolaColors.textPrimary,
+              color: context.colors.textPrimary,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
             decoration: const InputDecoration(
@@ -879,9 +879,9 @@ class _DigitSetterState extends State<_DigitSetter> {
         ),
         Text(
           widget.unit,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: PaolaColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -913,8 +913,8 @@ class _StepButton extends StatelessWidget {
             icon,
             size: 24,
             color: onPressed == null
-                ? PaolaColors.track
-                : PaolaColors.textSecondary,
+                ? context.colors.track
+                : context.colors.textSecondary,
           ),
         ),
       ),
@@ -924,8 +924,9 @@ class _StepButton extends StatelessWidget {
 
 class _RingPainter extends CustomPainter {
   final double progress;
+  final PaolaColors colors;
 
-  _RingPainter(this.progress);
+  _RingPainter(this.progress, this.colors);
 
   static const _stroke = 3.0;
 
@@ -936,19 +937,19 @@ class _RingPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = _stroke;
-    canvas.drawCircle(center, radius, paint..color = PaolaColors.track);
+    canvas.drawCircle(center, radius, paint..color = colors.track);
     if (progress <= 0) return;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -math.pi / 2,
       2 * math.pi * progress,
       false,
-      paint..color = PaolaColors.primary,
+      paint..color = colors.primary,
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.progress != progress;
+  bool shouldRepaint(_RingPainter old) => old.progress != progress || old.colors != colors;
 }
 
 /// Row between two lines that opens the history, with yesterday's study
@@ -965,35 +966,35 @@ class _HistoryLink extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border.symmetric(
-            horizontal: BorderSide(color: PaolaColors.line),
+            horizontal: BorderSide(color: context.colors.line),
           ),
         ),
         child: Row(
           children: [
-            const Text(
+            Text(
               'History',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: PaolaColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const Spacer(),
             if (yesterday != null)
               Text(
                 yesterday!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: PaolaColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 20,
-              color: PaolaColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),

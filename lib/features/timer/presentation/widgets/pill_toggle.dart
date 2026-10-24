@@ -70,7 +70,7 @@ class PillToggle<T extends Displayable> extends StatelessWidget {
                           duration: const Duration(milliseconds: 250),
                           style:Theme.of(context).textTheme.bodyMedium!.copyWith(
                             color: selected
-                                ? Colors.white
+                                ? colorScheme.onPrimary
                                 : colorScheme.onSurfaceVariant,
                           ),
                           child: Text(options[i].toDisplayableString()),

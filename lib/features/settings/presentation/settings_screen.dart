@@ -69,6 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         _nickname.text = user?.nickname ?? '';
         _darkMode = prefs['dark_mode'] == 1 || prefs['dark_mode'] == true;
       });
+      _applyDarkMode(_darkMode);
     } catch (e) {
       _showMessage('Could not load settings: ${_errorText(e)}');
     }
@@ -102,12 +103,17 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
+  static void _applyDarkMode(bool enabled) =>
+      AppTheme.mode.value = enabled ? ThemeMode.dark : ThemeMode.light;
+
   Future<void> _setDarkMode(bool enabled) async {
     setState(() => _darkMode = enabled);
+    _applyDarkMode(enabled);
     try {
       await _api.setDarkMode(enabled);
     } catch (e) {
       if (mounted) setState(() => _darkMode = !enabled);
+      _applyDarkMode(!enabled);
       _showMessage('Could not save dark mode: ${_errorText(e)}');
     }
   }
@@ -147,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
 
     return Scaffold(
-      backgroundColor: PaolaColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -163,17 +169,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       height: 36,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: PaolaColors.primaryContainer,
+                        color: context.colors.primaryContainer,
                         borderRadius: BorderRadius.circular(
                           PaolaRadius.control,
                         ),
                       ),
                       child: Text(
                         initial,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: PaolaColors.primary,
+                          color: context.colors.primary,
                         ),
                       ),
                     ),
@@ -280,7 +286,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 icon: const Icon(Icons.logout, size: 18),
                 label: const Text('Log out', style: TextStyle(fontSize: 16)),
                 style: TextButton.styleFrom(
-                  foregroundColor: PaolaColors.textPrimary,
+                  foregroundColor: context.colors.textPrimary,
                   padding: EdgeInsets.zero,
                 ),
               ),
@@ -339,14 +345,14 @@ class _RowText extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: bold ? FontWeight.w500 : FontWeight.w400,
-            color: PaolaColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         Text(
           subtitle,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: PaolaColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -372,21 +378,21 @@ class _NicknameField extends StatelessWidget {
         textAlignVertical: TextAlignVertical.center,
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.done,
-        cursorColor: PaolaColors.primary,
-        style: const TextStyle(fontSize: 15, color: PaolaColors.textInput),
-        decoration: const InputDecoration(
+        cursorColor: context.colors.primary,
+        style: TextStyle(fontSize: 15, color: context.colors.textInput),
+        decoration: InputDecoration(
           hintText: 'Nickname',
           isDense: true,
           filled: true,
-          fillColor: PaolaColors.surface,
+          fillColor: context.colors.surface,
           contentPadding: EdgeInsets.symmetric(horizontal: 12),
           enabledBorder: OutlineInputBorder(
             borderRadius: radius,
-            borderSide: BorderSide(color: PaolaColors.line),
+            borderSide: BorderSide(color: context.colors.line),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: radius,
-            borderSide: BorderSide(color: PaolaColors.primary),
+            borderSide: BorderSide(color: context.colors.primary),
           ),
         ),
       ),
@@ -413,7 +419,7 @@ class _Toggle extends StatelessWidget {
           height: 20,
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: value ? PaolaColors.primary : PaolaColors.track,
+            color: value ? context.colors.primary : context.colors.track,
             borderRadius: BorderRadius.circular(10),
           ),
           child: AnimatedAlign(
@@ -423,8 +429,8 @@ class _Toggle extends StatelessWidget {
             child: Container(
               width: 14,
               height: 14,
-              decoration: const BoxDecoration(
-                color: PaolaColors.surface,
+              decoration: BoxDecoration(
+                color: context.colors.surface,
                 shape: BoxShape.circle,
               ),
             ),

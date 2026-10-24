@@ -125,10 +125,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     return Scaffold(
-      backgroundColor: PaolaColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          color: PaolaColors.primary,
+          color: context.colors.primary,
           onRefresh: _load,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -153,17 +153,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding: const EdgeInsets.only(top: 40),
                   child: Center(
                     child: _loading
-                        ? const CircularProgressIndicator(
-                            color: PaolaColors.primary,
+                        ? CircularProgressIndicator(
+                            color: context.colors.primary,
                           )
                         : Text(
                             _error != null
                                 ? 'Could not load sessions: $_error'
                                 : 'No sessions yet. Finished timers show up here.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
-                              color: PaolaColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                   ),
@@ -211,17 +211,17 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: PaolaColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
-            color: PaolaColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
       ],
@@ -235,13 +235,13 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Wrap(
+    return Wrap(
       spacing: 16,
       runSpacing: 4,
       children: [
-        _LegendItem(PaolaColors.primary, 'Phone resting'),
-        _LegendItem(PaolaColors.error, 'Picked up'),
-        _LegendItem(PaolaColors.track, 'Paused'),
+        _LegendItem(context.colors.primary, 'Phone resting'),
+        _LegendItem(context.colors.error, 'Picked up'),
+        _LegendItem(context.colors.track, 'Paused'),
       ],
     );
   }
@@ -269,9 +269,9 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: PaolaColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -296,7 +296,7 @@ class _SessionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const small = TextStyle(fontSize: 12, color: PaolaColors.textSecondary);
+    final small = TextStyle(fontSize: 12, color: context.colors.textSecondary);
     final pickUps = session.pickUps;
     final pickedUp = session.pickedUpTime;
     final pickedUpText = pickedUp.inMinutes > 0
@@ -305,8 +305,8 @@ class _SessionRow extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: PaolaColors.line)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.colors.line)),
       ),
       child: Column(
         children: [
@@ -318,17 +318,17 @@ class _SessionRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: PaolaColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     Text(
                       meta,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: PaolaColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -338,10 +338,10 @@ class _SessionRow extends StatelessWidget {
                 onPressed: onDelete,
                 tooltip: 'Delete session',
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_outline,
                   size: 20,
-                  color: PaolaColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -350,7 +350,7 @@ class _SessionRow extends StatelessWidget {
           SizedBox(
             height: 6,
             width: double.infinity,
-            child: CustomPaint(painter: _TimelinePainter(session.periods)),
+            child: CustomPaint(painter: _TimelinePainter(session.periods, context.colors)),
           ),
           const SizedBox(height: 6),
           Row(
@@ -366,7 +366,7 @@ class _SessionRow extends StatelessWidget {
                       : 'Picked up $pickUps×, $pickedUpText',
                   textAlign: TextAlign.center,
                   style: small.copyWith(
-                    color: pickUps == 0 ? null : PaolaColors.error,
+                    color: pickUps == 0 ? null : context.colors.error,
                   ),
                 ),
               ),
@@ -387,8 +387,9 @@ class _SessionRow extends StatelessWidget {
 /// minimum width, so even a few seconds in a long session stay visible.
 class _TimelinePainter extends CustomPainter {
   final List<FocusPeriod> periods;
+  final PaolaColors colors;
 
-  _TimelinePainter(this.periods);
+  _TimelinePainter(this.periods, this.colors);
 
   static const _minPickUpWidth = 4.0;
 
@@ -398,7 +399,7 @@ class _TimelinePainter extends CustomPainter {
       Offset.zero & size,
       const Radius.circular(2),
     );
-    canvas.drawRRect(bar, Paint()..color = PaolaColors.track);
+    canvas.drawRRect(bar, Paint()..color = colors.track);
     canvas.save();
     canvas.clipRRect(bar);
 
@@ -408,8 +409,8 @@ class _TimelinePainter extends CustomPainter {
         ? 0
         : t.difference(first).inMilliseconds / total * size.width;
 
-    final still = Paint()..color = PaolaColors.primary;
-    final pickedUp = Paint()..color = PaolaColors.error;
+    final still = Paint()..color = colors.primary;
+    final pickedUp = Paint()..color = colors.error;
     for (final p in periods.where((p) => !p.pickedUp)) {
       canvas.drawRect(
         Rect.fromLTRB(x(p.start), 0, x(p.end), size.height),
@@ -429,5 +430,5 @@ class _TimelinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TimelinePainter old) => old.periods != periods;
+  bool shouldRepaint(_TimelinePainter old) => old.periods != periods || old.colors != colors;
 }

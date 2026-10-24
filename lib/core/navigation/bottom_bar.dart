@@ -13,8 +13,6 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-  static const Color _activeBackground = Color(0x66D4FFD0);
-
   static const List<IconData> _icons = [
     Icons.home_filled,
     Icons.timer,
@@ -26,6 +24,7 @@ class CustomBottomNavigation extends StatelessWidget {
     Color activeColor = Theme.of(context).colorScheme.primary;
     Color backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
     Color inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    Color activeBackground = Theme.of(context).colorScheme.primaryContainer;
 
     return SafeArea(
       top: false,
@@ -48,12 +47,12 @@ class CustomBottomNavigation extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? _activeBackground
+                            ? activeBackground
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(defaultCornerRadius),
                         border: isSelected
                             ? Border.all(
-                                color: Colors.white,
+                                color: backgroundColor,
                                 width: 1.5,
                               )
                             : null,
