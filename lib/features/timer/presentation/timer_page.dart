@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/features/study_history/presentation/study_history_page.dart';
-import 'package:interactive_notifications/features/timer/models/mood.dart';
-import 'package:interactive_notifications/features/timer/presentation/self_assessment_page.dart';
-import 'package:interactive_notifications/core/util/constants.dart';
-import 'package:interactive_notifications/features/study_history/presentation/widgets/stacked_cards.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/timer_element.dart';
-import 'package:interactive_notifications/features/timer/util/timer_bridge.dart';
+import 'package:paola_mobile/features/study_history/presentation/study_history_page.dart';
+import 'package:paola_mobile/features/timer/models/mood.dart';
+import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
+import 'package:paola_mobile/core/util/constants.dart';
+import 'package:paola_mobile/features/study_history/presentation/widgets/stacked_cards.dart';
+import 'package:paola_mobile/features/timer/presentation/widgets/timer_element.dart';
+import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
 import 'package:live_activities/live_activities.dart';
 
 class TimerPage extends StatefulWidget {

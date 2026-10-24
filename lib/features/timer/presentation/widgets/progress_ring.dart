@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/style/container.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/timer_display.dart';
+import 'package:paola_mobile/core/style/container.dart';
+import 'package:paola_mobile/features/timer/presentation/widgets/timer_display.dart';
 
 class ProgressRingWidget extends StatelessWidget {
   static const double _totalDiameter = 300.0; // including the container

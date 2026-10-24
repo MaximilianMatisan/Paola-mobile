@@ -1,11 +1,11 @@
 {
-    "name": "interactive_notifications",
-    "short_name": "interactive_notifications",
+    "name": "Paola Mobile",
+    "short_name": "Paola",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A mobile application for recording study sessions.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

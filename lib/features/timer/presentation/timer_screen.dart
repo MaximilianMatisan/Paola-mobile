@@ -10,15 +10,15 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:interactive_notifications/core/network/paola_api.dart';
-import 'package:interactive_notifications/features/timer/services/movement_sensor.dart';
-import 'package:interactive_notifications/core/style/paola_theme.dart';
-import 'package:interactive_notifications/features/timer/util/timer_notification.dart';
-import 'package:interactive_notifications/core/widgets/delete_confirmation.dart';
-import 'package:interactive_notifications/features/timer/models/timer_mode.dart';
-import 'package:interactive_notifications/features/timer/presentation/self_assessment_page.dart';
-import 'package:interactive_notifications/features/timer/util/timer_bridge.dart';
-import 'package:interactive_notifications/features/timer/util/timer_live_activity.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/features/timer/services/movement_sensor.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/features/timer/util/timer_notification.dart';
+import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/features/timer/models/timer_mode.dart';
+import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
+import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
+import 'package:paola_mobile/features/timer/util/timer_live_activity.dart';
 
 class TimerScreen extends StatefulWidget {
   final VoidCallback onOpenHistory;

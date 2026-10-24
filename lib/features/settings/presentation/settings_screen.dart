@@ -2,12 +2,13 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:interactive_notifications/core/network/api_exception.dart';
-import 'package:interactive_notifications/core/network/paola_api.dart';
-import 'package:interactive_notifications/core/style/paola_theme.dart';
-import 'package:interactive_notifications/features/timer/util/timer_notification.dart';
-import 'package:interactive_notifications/core/widgets/delete_confirmation.dart';
-import 'package:interactive_notifications/features/auth/presentation/login_page.dart';
+import 'package:paola_mobile/core/network/api_exception.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/features/timer/util/timer_notification.dart';
+import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/features/auth/presentation/login_page.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

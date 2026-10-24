@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/navigation/main_environment.dart';
-import 'package:interactive_notifications/core/style/container.dart';
-import 'package:interactive_notifications/features/auth/data/auth_repository.dart';
+import 'package:paola_mobile/core/navigation/main_environment.dart';
+import 'package:paola_mobile/core/style/container.dart';
+import 'package:paola_mobile/features/auth/data/auth_repository.dart';
 
 import '../../../../core/style/text_field.dart';
 import 'login_header.dart';

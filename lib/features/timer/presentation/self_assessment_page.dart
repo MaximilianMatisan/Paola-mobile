@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/navigation/main_environment.dart';
-import 'package:interactive_notifications/core/util/constants.dart';
+import 'package:paola_mobile/core/navigation/main_environment.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 import 'package:live_activities/live_activities.dart';
 
 import 'widgets/self_assessment.dart';

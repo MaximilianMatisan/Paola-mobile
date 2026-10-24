@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/style/container.dart';
-import 'package:interactive_notifications/core/util/constants.dart';
+import 'package:paola_mobile/core/style/container.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 
 
 class CustomBottomNavigation extends StatelessWidget {

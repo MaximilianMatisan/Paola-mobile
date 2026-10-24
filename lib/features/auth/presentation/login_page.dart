@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/features/auth/presentation/widgets/login_form.dart';
+import 'package:paola_mobile/features/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

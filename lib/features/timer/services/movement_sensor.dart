@@ -16,7 +16,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
-import 'package:interactive_notifications/core/network/paola_api.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
 
 class MovementSensor extends ChangeNotifier {
   MovementSensor({required this.onTimeout});

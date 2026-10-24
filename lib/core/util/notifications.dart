@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:interactive_notifications/features/timer/util/timer_notification.dart';
+import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 
 final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();

@@ -3,9 +3,9 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:interactive_notifications/core/network/paola_api.dart';
-import 'package:interactive_notifications/core/style/paola_theme.dart';
-import 'package:interactive_notifications/features/auth/presentation/login_page.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/features/auth/presentation/login_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PaolaColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -37,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
               future: _user,
               builder: (context, snap) {
                 if (snap.connectionState != ConnectionState.done) {
-                  return const CircularProgressIndicator(
-                    color: PaolaColors.primary,
+                  return CircularProgressIndicator(
+                    color: context.colors.primary,
                   );
                 }
                 final name = snap.data?.nickname;
@@ -58,15 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           snap.error.toString(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: PaolaColors.error),
+                          style: TextStyle(color: context.colors.error),
                         ),
                       ),
                     const SizedBox(height: 32),
                     TextButton(
                       onPressed: _logout,
-                      child: const Text(
+                      child: Text(
                         'Log out',
-                        style: TextStyle(color: PaolaColors.link),
+                        style: TextStyle(color: context.colors.link),
                       ),
                     ),
                   ],

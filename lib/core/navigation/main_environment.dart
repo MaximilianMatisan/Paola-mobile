@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/features/home/presentation/home_screen.dart';
-import 'package:interactive_notifications/features/study_history/presentation/history_screen.dart';
-import 'package:interactive_notifications/features/timer/presentation/timer_screen.dart';
+import 'package:paola_mobile/features/home/presentation/home_screen.dart';
+import 'package:paola_mobile/features/study_history/presentation/history_screen.dart';
+import 'package:paola_mobile/features/timer/presentation/timer_screen.dart';
 
 import '../../features/settings/presentation/settings_screen.dart';
 import 'bottom_bar.dart';

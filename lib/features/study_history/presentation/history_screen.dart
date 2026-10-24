@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:interactive_notifications/core/network/paola_api.dart';
-import 'package:interactive_notifications/core/style/paola_theme.dart';
-import 'package:interactive_notifications/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 
 class HistoryScreen extends StatefulWidget {
   /// Called by the back button in the top left corner.

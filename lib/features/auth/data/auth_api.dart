@@ -2,7 +2,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:interactive_notifications/core/network/api_client.dart';
+import 'package:paola_mobile/core/network/api_client.dart';
 
 class AuthApi {
 

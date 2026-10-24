@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/network/api_exception.dart';
-import 'package:interactive_notifications/core/network/paola_api.dart';
+import 'package:paola_mobile/core/network/api_exception.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
 
 /// Shows the server in use; tapping it lets you enter another one, e.g. the
 /// LAN IP of the laptop running the web app.

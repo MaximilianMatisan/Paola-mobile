@@ -29,8 +29,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:interactive_notifications/core/network/api_client.dart';
-import 'package:interactive_notifications/core/network/api_exception.dart';
+import 'package:paola_mobile/core/network/api_client.dart';
+import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppUser {

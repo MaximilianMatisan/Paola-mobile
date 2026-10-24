@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:interactive_notifications/core/style/paola_theme.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
 
 /// Shows the delete confirmation over a dimmed screen. Resolves to true only
 /// if the user tapped the confirm button; Cancel or tapping outside gives false.
@@ -15,7 +15,7 @@ Future<bool> confirmDelete(
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    barrierColor: PaolaColors.scrim,
+    barrierColor: context.colors.scrim,
     builder: (context) => _DeleteConfirmation(
       title: title,
       message: message,
@@ -53,19 +53,19 @@ class _DeleteConfirmation extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: PaolaColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     message,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       height: 1.35,
-                      color: PaolaColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 20),

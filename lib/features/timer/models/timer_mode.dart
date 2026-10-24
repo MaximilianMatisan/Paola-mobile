@@ -1,4 +1,4 @@
-import 'package:interactive_notifications/core/util/displayable.dart';
+import 'package:paola_mobile/core/util/displayable.dart';
 
 enum TimerMode implements Displayable{
   stopwatch,

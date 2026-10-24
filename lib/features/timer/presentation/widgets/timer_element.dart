@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/pill_toggle.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/progress_ring.dart';
-import 'package:interactive_notifications/features/timer/presentation/widgets/timer_buttons.dart';
+import 'package:paola_mobile/features/timer/presentation/widgets/pill_toggle.dart';
+import 'package:paola_mobile/features/timer/presentation/widgets/progress_ring.dart';
+import 'package:paola_mobile/features/timer/presentation/widgets/timer_buttons.dart';
 
 import '../../../../core/style/container.dart';
 import '../../models/timer_mode.dart';

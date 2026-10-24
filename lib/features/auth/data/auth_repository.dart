@@ -1,7 +1,7 @@
 
 import 'package:dio/dio.dart';
-import 'package:interactive_notifications/core/network/api_exception.dart';
-import 'package:interactive_notifications/core/network/paola_api.dart';
+import 'package:paola_mobile/core/network/api_exception.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
 
 import 'auth_api.dart';
 
@@ -22,11 +22,19 @@ class AuthRepository {
         response.headers['set-cookie']?.join('; '),
       );
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['error'];
+      final data = e.response?.data;
+      final errorMsg = data is Map ? data['error'] : null;
       if (errorMsg is String) {
         throw ApiException(message: errorMsg);
       }
-      throw const ApiException(message: 'Error while logging in');
+      // Surface the cause (connection refused, sandbox, wrong URL, ...).
+      final status = e.response?.statusCode;
+      throw ApiException(
+        message:
+            'Error while logging in (${e.type.name}'
+            '${status != null ? ', HTTP $status' : ''}): '
+            '${e.message ?? e.error} – ${e.requestOptions.uri}',
+      );
     }
   }
 }

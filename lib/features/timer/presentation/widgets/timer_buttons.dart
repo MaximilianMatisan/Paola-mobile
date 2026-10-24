@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:interactive_notifications/core/util/constants.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 
 class TimerButtons extends StatelessWidget {
   /// Timer has more >= 1 Seconds elapsed

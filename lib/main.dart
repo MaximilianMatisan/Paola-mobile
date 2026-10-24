@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:interactive_notifications/core/navigation/main_environment.dart';
-import 'package:interactive_notifications/core/network/paola_api.dart';
-import 'package:interactive_notifications/core/style/theme.dart';
-import 'package:interactive_notifications/features/auth/presentation/login_page.dart';
-import 'package:interactive_notifications/core/util/notifications.dart';
+import 'package:paola_mobile/core/navigation/main_environment.dart';
+import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/features/auth/presentation/login_page.dart';
+import 'package:paola_mobile/core/util/notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
