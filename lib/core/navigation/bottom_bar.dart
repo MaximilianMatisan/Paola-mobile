@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:paola_mobile/core/style/container.dart';
 import 'package:paola_mobile/core/util/constants.dart';
-
 
 class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -13,69 +11,120 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-  static const List<IconData> _icons = [
-    Icons.home_filled,
-    Icons.timer,
-    Icons.settings,
+  static const List<_NavItem> _items = [
+    _NavItem(Icons.home_outlined, 'Home'),
+    _NavItem(Icons.schedule_outlined, 'Timer'),
+    _NavItem(Icons.settings_outlined, 'Settings'),
   ];
+
+  static const double _navBarHeight = 80;
 
   @override
   Widget build(BuildContext context) {
-    Color activeColor = Theme.of(context).colorScheme.primary;
-    Color backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
-    Color inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    Color activeBackground = Theme.of(context).colorScheme.primaryContainer;
+    final scheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-        child: Container(
-          height: 64,
-          decoration: defaultBoxDecoration(backgroundColor),
-          child: Padding(
-            padding: const EdgeInsets.all(2),
+    return Material(
+      color: scheme.surfaceContainerLowest,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: scheme.outlineVariant, width: 1),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: _navBarHeight,
             child: Row(
-              children: List.generate(_icons.length, (index) {
-                final bool isSelected = currentIndex == index;
-
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => onTap(index),
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? activeBackground
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(defaultCornerRadius),
-                        border: isSelected
-                            ? Border.all(
-                                color: backgroundColor,
-                                width: 1.5,
-                              )
-                            : null,
-                      ),
-                      child: Center(
-                        child: AnimatedScale(
-                          scale: isSelected ? 1.2 : 1.0,
-                          duration: const Duration(milliseconds: 250),
-                          child: Icon(
-                            _icons[index],
-                            size: defaultIconPixelSize,
-                            color: isSelected ? activeColor : inactiveColor,
-                          ),
-                        ),
-                      ),
+              children: [
+                for (int i = 0; i < _items.length; i++)
+                  Expanded(
+                    child: _NavBarItem(
+                      icon: _items[i].icon,
+                      label: _items[i].label,
+                      selected: i == currentIndex,
+                      onTap: () => onTap(i),
                     ),
                   ),
-                );
-              }),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final String label;
+
+  const _NavItem(this.icon, this.label);
+}
+
+class _NavBarItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavBarItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  static const Duration _duration = Duration(milliseconds: 220);
+  static const double _selectedTabLineWidth = 40;
+  static const double _selectedTabLineHeight = 3;
+  static const double _navBarFontSize = 14;
+  static const double _spaceBetweenElements = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    final Color contentColor =
+    selected ? scheme.onSurface : scheme.onSurfaceVariant;
+
+    final TextStyle labelStyle = (theme.textTheme.labelLarge ??
+        const TextStyle())
+        .copyWith(
+      fontSize: _navBarFontSize,
+      color: contentColor,
+      fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+    );
+
+    return InkWell(
+        onTap: onTap,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: defaultIconPixelSize, color: contentColor),
+              const SizedBox(height: _spaceBetweenElements),
+              AnimatedDefaultTextStyle(
+                style: labelStyle,
+                duration: _duration,
+                child: Text(label),
+              ),
+              const SizedBox(height: _spaceBetweenElements),
+              // Selected tab line
+              AnimatedContainer(
+                duration: _duration,
+                curve: Curves.easeOutCubic,
+                width: selected ? _selectedTabLineWidth : 0,
+                height: selected ? _selectedTabLineHeight : 0,
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ],
+          ),
+        ),
     );
   }
 }
