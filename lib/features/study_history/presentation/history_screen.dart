@@ -1,6 +1,7 @@
 // History of the timer sessions recorded by this app (focus_period table in db),
 
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
@@ -54,23 +55,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  static const _weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-
   static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
   String _dayLabel(DateTime day) {
     final diff = _day(DateTime.now()).difference(day).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return _weekdays[day.weekday - 1];
+    if (diff == 0) return context.t.today;
+    if (diff == 1) return context.t.yesterday;
+    if (diff < 7) return context.t.weekdays[day.weekday - 1];
     return '${day.day}.${day.month}.${day.year}';
   }
 
@@ -91,13 +82,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _delete(FocusSession s) async {
-    final mode = s.pomodoro ? 'Pomodoro' : 'Stopwatch';
+    final mode = s.pomodoro ? context.t.pomodoro : context.t.stopwatch;
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete this session?',
-      message:
-          "${_formatDuration(s.duration)} ($mode) will be removed from your "
-          "history. This can't be undone.",
+      title: context.t.discardTitle,
+      message: context.t.deleteSessionMessage(
+        _formatDuration(s.duration),
+        mode,
+      ),
     );
     if (!confirmed || !mounted) return;
     try {
@@ -107,7 +99,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Deleting failed: $e')));
+      ).showSnackBar(SnackBar(content: Text(context.t.deletingFailed(e))));
     }
   }
 
@@ -133,15 +125,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
             children: [
-              ScreenTitle('History', onBack: widget.onBack),
+              ScreenTitle(context.t.history, onBack: widget.onBack),
               const SizedBox(height: 20),
               Row(
                 children: [
-                  _Stat('This week', _formatDuration(weekTotal)),
+                  _Stat(context.t.thisWeek, _formatDuration(weekTotal)),
                   const SizedBox(width: 32),
-                  _Stat('Sessions', '${week.length}'),
+                  _Stat(context.t.sessions, '${week.length}'),
                   const SizedBox(width: 32),
-                  _Stat('Picked up', '$weekPickUps×'),
+                  _Stat(context.t.pickedUp, '$weekPickUps×'),
                 ],
               ),
               const SizedBox(height: 16),
@@ -158,8 +150,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           )
                         : Text(
                             _error != null
-                                ? 'Could not load sessions: $_error'
-                                : 'No sessions yet. Finished timers show up here.',
+                                ? context.t.loadSessionsFailed(_error!)
+                                : context.t.noSessions,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 15,
@@ -176,7 +168,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   _SessionRow(
                     title: _formatDuration(s.duration),
                     meta:
-                        '${s.pomodoro ? 'Pomodoro' : 'Stopwatch'}, ${_clock(s.start)}',
+                        '${s.pomodoro ? context.t.pomodoro : context.t.stopwatch}, ${_clock(s.start)}',
                     session: s,
                     onDelete: () => _delete(s),
                   ),
@@ -211,10 +203,7 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            color: context.colors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
         Text(
           value,
@@ -239,9 +228,9 @@ class _Legend extends StatelessWidget {
       spacing: 16,
       runSpacing: 4,
       children: [
-        _LegendItem(context.colors.primary, 'Phone resting'),
-        _LegendItem(context.colors.error, 'Picked up'),
-        _LegendItem(context.colors.track, 'Paused'),
+        _LegendItem(context.colors.primary, context.t.phoneResting),
+        _LegendItem(context.colors.error, context.t.pickedUp),
+        _LegendItem(context.colors.track, context.t.paused),
       ],
     );
   }
@@ -269,10 +258,7 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: context.colors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -336,7 +322,7 @@ class _SessionRow extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onDelete,
-                tooltip: 'Delete session',
+                tooltip: context.t.deleteSession,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
                   Icons.delete_outline,
@@ -350,7 +336,9 @@ class _SessionRow extends StatelessWidget {
           SizedBox(
             height: 6,
             width: double.infinity,
-            child: CustomPaint(painter: _TimelinePainter(session.periods, context.colors)),
+            child: CustomPaint(
+              painter: _TimelinePainter(session.periods, context.colors),
+            ),
           ),
           const SizedBox(height: 6),
           Row(
@@ -362,8 +350,8 @@ class _SessionRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   pickUps == 0
-                      ? 'Not picked up'
-                      : 'Picked up $pickUps×, $pickedUpText',
+                      ? context.t.notPickedUp
+                      : context.t.pickedUpTimes(pickUps, pickedUpText),
                   textAlign: TextAlign.center,
                   style: small.copyWith(
                     color: pickUps == 0 ? null : context.colors.error,
@@ -430,5 +418,6 @@ class _TimelinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TimelinePainter old) => old.periods != periods || old.colors != colors;
+  bool shouldRepaint(_TimelinePainter old) =>
+      old.periods != periods || old.colors != colors;
 }

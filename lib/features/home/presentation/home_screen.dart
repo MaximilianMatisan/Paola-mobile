@@ -2,6 +2,7 @@
 // confirm the session works against the shared database.
 
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
@@ -46,7 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GradientText(
-                      name == null || name.isEmpty ? 'Hello!' : 'Hello, $name!',
+                      name == null || name.isEmpty
+                          ? context.t.hello
+                          : context.t.helloName(name),
                       style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -65,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     TextButton(
                       onPressed: _logout,
                       child: Text(
-                        'Log out',
+                        context.t.logOut,
                         style: TextStyle(color: context.colors.link),
                       ),
                     ),

@@ -1,5 +1,6 @@
 
 import 'package:dio/dio.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 
@@ -31,7 +32,7 @@ class AuthRepository {
       final status = e.response?.statusCode;
       throw ApiException(
         message:
-            'Error while logging in (${e.type.name}'
+            '${AppLanguage.t.errorLogin} (${e.type.name}'
             '${status != null ? ', HTTP $status' : ''}): '
             '${e.message ?? e.error} – ${e.requestOptions.uri}',
       );

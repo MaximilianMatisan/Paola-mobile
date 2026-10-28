@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 
@@ -21,25 +22,25 @@ class _ServerButtonState extends State<ServerButton> {
     final url = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Server'),
+        title: Text(context.t.serverTitle),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.url,
           decoration: InputDecoration(
             hintText: 'http://192.168.1.20:3000',
-            helperText: 'Default: ${_api.defaultServerUrl}',
+            helperText: context.t.serverDefault(_api.defaultServerUrl),
           ),
           onSubmitted: (text) => Navigator.of(context).pop(text),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(''),
-            child: const Text('Reset'),
+            child: Text(context.t.serverReset),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Save'),
+            child: Text(context.t.save),
           ),
         ],
       ),

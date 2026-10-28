@@ -1,16 +1,16 @@
 // Connection to the Paola web app (Next.js API routes).
 //
-// The web app authenticates via the HttpOnly cookie "paola_session" (JWT),
-// issued by POST /api/auth/login. We store that cookie after login and send
-// it as a Cookie header on every request, so no changes to the web app are
-// needed and the mobile app works on the same database as the web version.
+// paola web authenticates via cookie "paola_session" (JWT),
+// issued by POST /api/auth/login
+// store that cookie after login and send as a header on every api request
+// -> mobile app works on the same database
 //
 // Used endpoints:
 //   POST /api/auth/login    {username, password} -> Set-Cookie (AuthApi)
 //   GET  /api/user/get      -> { user: {...} }
 //   GET  /api/study_log/byOwner -> { logs: [{start, duration, ...}] }
 //   POST /api/user/update   {id, nickname}
-//   GET  /api/user/preferences -> { preferences: {dark_mode, ...} }
+//   GET  /api/user/preferences -> { preferences: {dark_mode, language, ...} }
 //   POST /api/user/preferences {all preference flags}
 //   POST /api/user/request_deletion {reasons, comment}
 //   POST /api/focus_period/create {session_start, is_pomodoro, periods}
@@ -29,6 +29,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:paola_mobile/core/l10n/app_language.dart';
+import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_client.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,7 +47,7 @@ class AppUser {
   );
 }
 
-/// Part of a timer session in which the phone lay still or was picked up.
+/// Part of a timer session in which the phone layed still or was picked up
 class FocusPeriod {
   final DateTime start;
   final DateTime end;
@@ -143,9 +145,7 @@ class PaolaApi {
     }
     final uri = Uri.tryParse(normalized);
     if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-      throw const ApiException(
-        message: 'Invalid URL, e.g. http://192.168.1.20:3000',
-      );
+      throw ApiException(message: AppLanguage.t.errorInvalidUrl);
     }
     _useServer(normalized);
     await prefs.setString(_prefsServerUrl, normalized);
@@ -191,7 +191,7 @@ class PaolaApi {
         ? null
         : RegExp('$_cookieName=([^;]+)').firstMatch(setCookie);
     if (match == null) {
-      throw const ApiException(message: 'No session cookie in server response');
+      throw ApiException(message: AppLanguage.t.errorNoSessionCookie);
     }
     _sessionCookie = match.group(1);
     await _persist();
@@ -207,12 +207,12 @@ class PaolaApi {
         .get(_uri(path, query), headers: _headers)
         .timeout(_timeout);
     if (res.statusCode == 401 || res.statusCode == 403) {
-      throw ApiException(
-        message: 'Not logged in or no access (HTTP ${res.statusCode})',
-      );
+      throw ApiException(message: AppLanguage.t.errorNoAccess(res.statusCode));
     }
     if (res.statusCode != 200) {
-      throw ApiException(message: 'Error on $path (HTTP ${res.statusCode})');
+      throw ApiException(
+        message: AppLanguage.t.errorRequest(path, res.statusCode),
+      );
     }
     return jsonDecode(res.body);
   }
@@ -222,15 +222,13 @@ class PaolaApi {
         .post(_uri(path), headers: _headers, body: jsonEncode(body))
         .timeout(_timeout);
     if (res.statusCode == 401 || res.statusCode == 403) {
-      throw ApiException(
-        message: 'Not logged in or no access (HTTP ${res.statusCode})',
-      );
+      throw ApiException(message: AppLanguage.t.errorNoAccess(res.statusCode));
     }
     if (res.statusCode != 200) {
       throw ApiException(
         message:
             _decode(res)?['error']?.toString() ??
-            'Error on $path (HTTP ${res.statusCode})',
+            AppLanguage.t.errorRequest(path, res.statusCode),
       );
     }
     return jsonDecode(res.body);
@@ -276,12 +274,18 @@ class PaolaApi {
     return Map<String, dynamic>.from(body['preferences'] as Map);
   }
 
+  Future<void> setDarkMode(bool enabled) =>
+      _setPreference('dark_mode', enabled ? 1 : 0);
+
+  Future<void> setLanguage(Language language) =>
+      _setPreference('language', language.flag);
+
   /// The web app overwrites every flag on POST, so the current preferences
-  /// are sent back with only dark_mode changed.
-  Future<void> setDarkMode(bool enabled) async {
+  /// are sent back with only [key] changed.
+  Future<void> _setPreference(String key, int value) async {
     final prefs = await preferences()
       ..remove('user_id');
-    prefs['dark_mode'] = enabled ? 1 : 0;
+    prefs[key] = value;
     await _post('/api/user/preferences', prefs);
   }
 
@@ -294,7 +298,7 @@ class PaolaApi {
     });
     if (body['success'] != true) {
       throw ApiException(
-        message: body['error']?.toString() ?? 'Deletion request failed',
+        message: body['error']?.toString() ?? AppLanguage.t.errorDeletionFailed,
       );
     }
   }

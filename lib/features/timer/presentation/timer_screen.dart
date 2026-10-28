@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:flutter/services.dart';
 
 import 'package:paola_mobile/core/network/paola_api.dart';
@@ -185,8 +186,8 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   Future<void> _confirmReset() async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete this session?',
-      message: "The time you've tracked so far will be discarded.",
+      title: context.t.discardTitle,
+      message: context.t.discardMessage,
     );
     if (confirmed && mounted) _reset();
   }
@@ -194,9 +195,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   /// Pauses because the countdown ran out while the phone was in use.
   void _onPickedUp() {
     _pause();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Timer paused: phone was picked up')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.t.pausedPickedUp)));
   }
 
   /// Saves the work session recorded so far with its movement timeline.
@@ -215,7 +216,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Saving the session failed: $e')));
+      ).showSnackBar(SnackBar(content: Text(context.t.saveSessionFailed(e))));
     });
   }
 
@@ -231,13 +232,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         _banked = Duration.zero;
         _onBreak = true;
         _start();
-        _notify('Pomodoro finished', 'Time for a $_breakMinutes min break!');
+        _notify(context.t.pomodoroFinished, context.t.breakTime(_breakMinutes));
       } else {
         final wasBreak = _onBreak;
         _reset(keepAlerts: true);
         _notify(
-          wasBreak ? 'Break is over' : 'Pomodoro finished',
-          wasBreak ? 'Ready for the next round?' : 'Well done!',
+          wasBreak ? context.t.breakOver : context.t.pomodoroFinished,
+          wasBreak ? context.t.nextRound : context.t.wellDone,
         );
       }
       return;
@@ -247,12 +248,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   /// Mirrors the current state in the lock screen notification.
   void _syncNotification() {
+    final t = context.t;
     final pomodoro = _mode == TimerMode.pomodoro;
     final title = !pomodoro
-        ? 'Stopwatch'
+        ? t.stopwatch
         : _onBreak
-        ? 'Break'
-        : 'Pomodoro · $_workLabel';
+        ? t.breakLabel
+        : '${t.pomodoro} · $_workLabel';
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
     final Future<void> shown;
@@ -267,10 +269,10 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       final end = DateTime.now().add(_phaseTotal - elapsed);
       shown = TimerNotification.countdown(title, end);
       final (alertTitle, alertBody) = _onBreak
-          ? ('Break is over', 'Ready for the next round?')
+          ? (t.breakOver, t.nextRound)
           : _breakMinutes > 0
-          ? ('Pomodoro finished', 'Time for a $_breakMinutes min break!')
-          : ('Pomodoro finished', 'Well done!');
+          ? (t.pomodoroFinished, t.breakTime(_breakMinutes))
+          : (t.pomodoroFinished, t.wellDone);
       TimerNotification.scheduleEnd(
         phase,
         end,
@@ -278,9 +280,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         alertBody,
       ).catchError((Object e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not schedule the alert: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t.scheduleAlertFailed(e))));
       });
     } else {
       shown = TimerNotification.stopwatch(
@@ -295,17 +297,14 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         ..showSnackBar(
           e is NotificationsBlocked
               ? SnackBar(
-                  content: Text(
-                    '$e, so the lock screen timer and end alert '
-                    "can't show.",
-                  ),
+                  content: Text(t.notificationsBlockedHint(e)),
                   duration: const Duration(seconds: 8),
                   action: SnackBarAction(
-                    label: 'Turn on',
+                    label: t.turnOn,
                     onPressed: TimerNotification.allow,
                   ),
                 )
-              : SnackBar(content: Text('Lock screen timer failed: $e')),
+              : SnackBar(content: Text(t.lockScreenFailed(e))),
         );
     });
   }
@@ -319,7 +318,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text(context.t.ok),
           ),
         ],
       ),
@@ -352,7 +351,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
             children: [
-              const ScreenTitle('Timer'),
+              ScreenTitle(context.t.timerTitle),
               const SizedBox(height: 24),
               _ModeToggle(
                 mode: _mode,
@@ -385,8 +384,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                   onTap: widget.onOpenHistory,
                   yesterday: switch (snap) {
                     AsyncSnapshot(hasError: true) => null,
-                    AsyncSnapshot(:final data?) =>
-                      'Yesterday ${data.inMinutes} min',
+                    AsyncSnapshot(:final data?) => context.t.yesterdayMinutes(
+                      data.inMinutes,
+                    ),
                     _ => null,
                   },
                 ),
@@ -411,13 +411,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   Widget _runningDisplay() {
     final elapsed = _elapsed;
     if (_mode == TimerMode.stopwatch) {
-      return _DialTime(_format(elapsed), label: 'Stopwatch');
+      return _DialTime(_format(elapsed), label: context.t.stopwatch);
     }
     return _DialTime(
       _format(_phaseTotal - elapsed),
       label: _onBreak
-          ? 'Break, ${_breakLabel(_breakMinutes)}'
-          : 'of $_workText',
+          ? context.t.breakWithLength(_breakLabel(_breakMinutes))
+          : context.t.ofWork(_workText),
     );
   }
 
@@ -429,7 +429,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       children: [
         _DigitSetter(
           value: minutes,
-          unit: 'min',
+          unit: context.t.unitMin,
           max: _maxMinutes,
           step: 1,
           onChanged: (m) => _setWork(m, seconds),
@@ -449,7 +449,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         ),
         _DigitSetter(
           value: seconds,
-          unit: 'sec',
+          unit: context.t.unitSec,
           max: 59,
           step: _secondStep,
           onChanged: (sec) => _setWork(minutes, sec),
@@ -463,14 +463,14 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       Row(
         children: [
           Text(
-            'Break',
+            context.t.breakLabel,
             style: TextStyle(fontSize: 15, color: context.colors.textSecondary),
           ),
           const Spacer(),
           PopupMenuButton<int>(
             initialValue: _breakMinutes,
             color: context.colors.surface,
-            tooltip: 'Break length',
+            tooltip: context.t.breakLength,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(PaolaRadius.control),
               side: BorderSide(color: context.colors.line),
@@ -514,7 +514,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     SizedBox(
       width: double.infinity,
       child: PaolaButton(
-        label: 'Start',
+        label: context.t.start,
         onPressed: pomodoro && _workSeconds == 0 ? null : _start,
       ),
     ),
@@ -525,7 +525,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       children: [
         Expanded(
           child: PaolaButton(
-            label: _running ? 'Pause' : 'Resume',
+            label: _running ? context.t.pause : context.t.resume,
             style: PaolaButtonStyle.secondary,
             onPressed: _running ? _pause : _start,
           ),
@@ -533,14 +533,17 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         if (!_onBreak) ...[
           const SizedBox(width: 12),
           Expanded(
-            child: PaolaButton(label: 'Finish and save', onPressed: _finish),
+            child: PaolaButton(
+              label: context.t.finishAndSave,
+              onPressed: _finish,
+            ),
           ),
         ],
       ],
     ),
     const SizedBox(height: 8),
     PaolaButton(
-      label: 'Discard session',
+      label: context.t.discardSession,
       style: PaolaButtonStyle.danger,
       onPressed: _confirmReset,
     ),
@@ -559,8 +562,8 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     return m == 0 ? '$s s' : '$m min $s s';
   }
 
-  static String _breakLabel(int minutes) =>
-      minutes == 0 ? 'None' : '$minutes min';
+  String _breakLabel(int minutes) =>
+      minutes == 0 ? context.t.breakNone : '$minutes min';
 
   static String _format(Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');
@@ -588,11 +591,8 @@ class _MovementStatus extends StatelessWidget {
           _Dot(available ? context.colors.primary : context.colors.track),
           const SizedBox(width: 8),
           Text(
-            available ? 'Phone resting' : 'Motion sensor unavailable',
-            style: TextStyle(
-              fontSize: 14,
-              color: context.colors.textSecondary,
-            ),
+            available ? context.t.phoneResting : context.t.sensorUnavailable,
+            style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
         ],
       );
@@ -609,7 +609,7 @@ class _MovementStatus extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Phone moved. Pausing in $countdown s',
+              context.t.phoneMoved(countdown),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -683,7 +683,9 @@ class _ModeToggle extends StatelessWidget {
                       ? context.colors.textPrimary
                       : context.colors.track,
                   child: Text(
-                    m == TimerMode.pomodoro ? 'Pomodoro' : 'Stopwatch',
+                    m == TimerMode.pomodoro
+                        ? context.t.pomodoro
+                        : context.t.stopwatch,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: m == mode ? FontWeight.w500 : FontWeight.w400,
@@ -755,10 +757,7 @@ class _DialTime extends StatelessWidget {
         if (label != null)
           Text(
             label!,
-            style: TextStyle(
-              fontSize: 14,
-              color: context.colors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
       ],
     );
@@ -836,7 +835,7 @@ class _DigitSetterState extends State<_DigitSetter> {
       children: [
         _StepButton(
           icon: Icons.keyboard_arrow_up,
-          tooltip: 'More',
+          tooltip: context.t.more,
           onPressed: v < widget.max
               ? () => widget.onChanged(math.min(v + widget.step, widget.max))
               : null,
@@ -872,17 +871,14 @@ class _DigitSetterState extends State<_DigitSetter> {
         ),
         _StepButton(
           icon: Icons.keyboard_arrow_down,
-          tooltip: 'Less',
+          tooltip: context.t.less,
           onPressed: v > 0
               ? () => widget.onChanged(math.max(v - widget.step, 0))
               : null,
         ),
         Text(
           widget.unit,
-          style: TextStyle(
-            fontSize: 12,
-            color: context.colors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -949,7 +945,8 @@ class _RingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.progress != progress || old.colors != colors;
+  bool shouldRepaint(_RingPainter old) =>
+      old.progress != progress || old.colors != colors;
 }
 
 /// Row between two lines that opens the history, with yesterday's study
@@ -974,7 +971,7 @@ class _HistoryLink extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              'History',
+              context.t.history,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,

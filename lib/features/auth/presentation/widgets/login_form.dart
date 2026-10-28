@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/style/container.dart';
 import 'package:paola_mobile/features/auth/data/auth_repository.dart';
@@ -55,12 +56,12 @@ class _LoginFormState extends State<LoginForm> {
                   controller: _usernameController,
                   enabled: !_loginLoading,
                   decoration: InputDecoration(
-                    labelText: 'Username',
+                    labelText: context.t.loginUsername,
                     border: defaultTextInputBorder(),
                   ),
                   validator: (text) {
                     if (text == null || text.isEmpty) {
-                      return 'Please enter your username';
+                      return context.t.loginEnterUsername;
                     }
                     return null;
                   },
@@ -72,12 +73,12 @@ class _LoginFormState extends State<LoginForm> {
                   enabled: !_loginLoading,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: context.t.loginPassword,
                     border: defaultTextInputBorder(),
                   ),
                   validator: (text) {
                     if (text == null || text.isEmpty) {
-                      return 'Please enter your password';
+                      return context.t.loginEnterPassword;
                     }
                     return null;
                   },
@@ -132,7 +133,7 @@ class _LoginFormState extends State<LoginForm> {
                       }
                     },
                     child: Text(
-                      'LOG IN',
+                      context.t.loginButton,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
@@ -151,7 +152,7 @@ class _LoginFormState extends State<LoginForm> {
                 if (_loginLoading) return;
                 //TODO mail
               },
-              child: const Text('Contact'),
+              child: Text(context.t.loginContact),
             ),
           ),
           Center(child: ServerButton(enabled: !_loginLoading)),

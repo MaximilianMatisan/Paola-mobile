@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/util/constants.dart';
 import 'package:live_activities/live_activities.dart';
@@ -66,7 +67,7 @@ class _SelfAssessmentPageState extends State<SelfAssessmentPage> with WidgetsBin
         child: Column(
           mainAxisAlignment: .center,
           children: [
-            Text( 'Rate your study session!' ),
+            Text(context.t.rateSession),
             SelfAssessment(onPress: _rateStudySession,)
           ]
         )

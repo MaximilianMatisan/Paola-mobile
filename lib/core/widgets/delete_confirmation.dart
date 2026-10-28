@@ -2,16 +2,18 @@
 // component in the Figma file). Use it via [confirmDelete].
 
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 
 import 'package:paola_mobile/core/style/paola_theme.dart';
 
 /// Shows the delete confirmation over a dimmed screen. Resolves to true only
 /// if the user tapped the confirm button; Cancel or tapping outside gives false.
+/// [confirmLabel] defaults to "Delete" in the current language.
 Future<bool> confirmDelete(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Delete',
+  String? confirmLabel,
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
@@ -19,7 +21,7 @@ Future<bool> confirmDelete(
     builder: (context) => _DeleteConfirmation(
       title: title,
       message: message,
-      confirmLabel: confirmLabel,
+      confirmLabel: confirmLabel ?? context.t.delete,
     ),
   );
   return confirmed ?? false;
@@ -73,7 +75,7 @@ class _DeleteConfirmation extends StatelessWidget {
                     children: [
                       Expanded(
                         child: PaolaButton(
-                          label: 'Cancel',
+                          label: context.t.cancel,
                           style: PaolaButtonStyle.secondary,
                           onPressed: () => Navigator.of(context).pop(false),
                         ),

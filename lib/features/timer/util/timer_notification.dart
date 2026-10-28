@@ -6,6 +6,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -24,8 +25,8 @@ class NotificationsBlocked implements Exception {
 
   @override
   String toString() => status == NotificationStatus.appBlocked
-      ? 'Notifications are turned off for Paola'
-      : 'Timer notifications are turned off for Paola';
+      ? AppLanguage.t.notificationsOffApp
+      : AppLanguage.t.notificationsOffTimer;
 }
 
 class TimerNotification {
@@ -102,7 +103,7 @@ class TimerNotification {
 
   /// Static notification while the timer is paused.
   static Future<void> paused(String title, String time) =>
-      _show(title, body: 'Paused · $time');
+      _show(title, body: AppLanguage.t.pausedAt(time));
 
   static Future<void> cancel() async {
     if (_ready) await _plugin.cancel(id: _id);
@@ -131,11 +132,11 @@ class TimerNotification {
       androidScheduleMode: exact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _alertChannelId,
-          'Timer finished',
-          channelDescription: 'Alerts when a pomodoro or break is over',
+          AppLanguage.t.channelAlerts,
+          channelDescription: AppLanguage.t.channelAlertsDesc,
           importance: Importance.high,
           priority: Priority.high,
           visibility: NotificationVisibility.public,
@@ -177,8 +178,8 @@ class TimerNotification {
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
-          'Study timer',
-          channelDescription: 'Shows the running timer on the lock screen',
+          AppLanguage.t.channelTimer,
+          channelDescription: AppLanguage.t.channelTimerDesc,
           playSound: false,
           enableVibration: false,
           onlyAlertOnce: true,

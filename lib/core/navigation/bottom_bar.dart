@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/util/constants.dart';
 
 class CustomBottomNavigation extends StatelessWidget {
@@ -11,17 +12,16 @@ class CustomBottomNavigation extends StatelessWidget {
     required this.onTap,
   });
 
-  static const List<_NavItem> _items = [
-    _NavItem(Icons.home_outlined, 'Home'),
-    _NavItem(Icons.schedule_outlined, 'Timer'),
-    _NavItem(Icons.settings_outlined, 'Settings'),
-  ];
-
   static const double _navBarHeight = 80;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final items = [
+      _NavItem(Icons.home_outlined, context.t.navHome),
+      _NavItem(Icons.schedule_outlined, context.t.navTimer),
+      _NavItem(Icons.settings_outlined, context.t.navSettings),
+    ];
 
     return Material(
       color: scheme.surfaceContainerLowest,
@@ -37,11 +37,11 @@ class CustomBottomNavigation extends StatelessWidget {
             height: _navBarHeight,
             child: Row(
               children: [
-                for (int i = 0; i < _items.length; i++)
+                for (int i = 0; i < items.length; i++)
                   Expanded(
                     child: _NavBarItem(
-                      icon: _items[i].icon,
-                      label: _items[i].label,
+                      icon: items[i].icon,
+                      label: items[i].label,
                       selected: i == currentIndex,
                       onTap: () => onTap(i),
                     ),

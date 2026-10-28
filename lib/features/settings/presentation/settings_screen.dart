@@ -1,7 +1,10 @@
-// Settings: change nickname, toggle dark mode, check timer notifications,
+// Settings: change nickname, toggle dark mode, choose the language, check
+// timer notifications,
 
 import 'package:flutter/material.dart';
 
+import 'package:paola_mobile/core/l10n/app_language.dart';
+import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
@@ -70,19 +73,21 @@ class _SettingsScreenState extends State<SettingsScreen>
         _darkMode = prefs['dark_mode'] == 1 || prefs['dark_mode'] == true;
       });
       _applyDarkMode(_darkMode);
+      AppLanguage.set(Language.fromFlag(prefs['language']));
     } catch (e) {
-      _showMessage('Could not load settings: ${_errorText(e)}');
+      _showMessage((t) => t.settingsLoadFailed(_errorText(e)));
     }
   }
 
-  static String _errorText(Object e) =>
-      e is ApiException ? e.message : 'No connection to the server';
+  String _errorText(Object e) =>
+      e is ApiException ? e.message : context.t.noConnection;
 
-  void _showMessage(String text) {
+  /// [text] picks the message from the current language's texts.
+  void _showMessage(String Function(Translations t) text) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text)));
+      ..showSnackBar(SnackBar(content: Text(text(context.t))));
   }
 
   Future<void> _saveNickname() async {
@@ -95,9 +100,9 @@ class _SettingsScreenState extends State<SettingsScreen>
       await _api.updateNickname(user.id, name);
       if (!mounted) return;
       setState(() => _user = AppUser(id: user.id, nickname: name));
-      _showMessage('Nickname saved');
+      _showMessage((t) => t.nicknameSaved);
     } catch (e) {
-      _showMessage('Could not save nickname: ${_errorText(e)}');
+      _showMessage((t) => t.nicknameSaveFailed(_errorText(e)));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -114,26 +119,37 @@ class _SettingsScreenState extends State<SettingsScreen>
     } catch (e) {
       if (mounted) setState(() => _darkMode = !enabled);
       _applyDarkMode(!enabled);
-      _showMessage('Could not save dark mode: ${_errorText(e)}');
+      _showMessage((t) => t.darkModeSaveFailed(_errorText(e)));
+    }
+  }
+
+  /// Switches right away and reverts if the server can't store it.
+  Future<void> _setLanguage(Language language) async {
+    final previous = AppLanguage.current.value;
+    if (language == previous) return;
+    await AppLanguage.set(language);
+    try {
+      await _api.setLanguage(language);
+    } catch (e) {
+      await AppLanguage.set(previous);
+      _showMessage((t) => t.languageSaveFailed(_errorText(e)));
     }
   }
 
   Future<void> _requestDeletion() async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete your data?',
-      message:
-          'Your account will be marked for deletion and all your stored '
-          "learning data will be removed. This can't be undone.",
-      confirmLabel: 'Request',
+      title: context.t.deleteDataTitle,
+      message: context.t.deleteDataMessage,
+      confirmLabel: context.t.request,
     );
     if (!confirmed || !mounted) return;
     setState(() => _requestingDeletion = true);
     try {
       await _api.requestDeletion();
-      _showMessage('Deletion requested');
+      _showMessage((t) => t.deletionRequested);
     } catch (e) {
-      _showMessage('Could not request deletion: ${_errorText(e)}');
+      _showMessage((t) => t.deletionRequestFailed(_errorText(e)));
     } finally {
       if (mounted) setState(() => _requestingDeletion = false);
     }
@@ -149,6 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final name = _user?.nickname ?? '';
     final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
 
@@ -158,9 +175,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           children: [
-            const ScreenTitle('Settings'),
+            ScreenTitle(t.settingsTitle),
             _Group(
-              label: 'Profile',
+              label: t.profile,
               children: [
                 Row(
                   children: [
@@ -187,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     Expanded(
                       child: _RowText(
                         title: name.isEmpty ? '…' : name,
-                        subtitle: 'Logged in',
+                        subtitle: t.loggedIn,
                         bold: true,
                       ),
                     ),
@@ -198,12 +215,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                     Expanded(
                       child: _NicknameField(
                         controller: _nickname,
+                        hint: t.nickname,
                         onSubmitted: (_) => _saveNickname(),
                       ),
                     ),
                     const SizedBox(width: 8),
                     PaolaButton(
-                      label: _saving ? 'Saving…' : 'Save',
+                      label: _saving ? t.saving : t.save,
                       style: PaolaButtonStyle.secondary,
                       onPressed: _user == null || _saving
                           ? null
@@ -214,40 +232,55 @@ class _SettingsScreenState extends State<SettingsScreen>
               ],
             ),
             _Group(
-              label: 'Appearance',
+              label: t.appearance,
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: _RowText(
-                        title: 'Dark mode',
-                        subtitle: 'Use a dark color scheme',
+                        title: t.darkMode,
+                        subtitle: t.darkModeDesc,
                       ),
                     ),
                     const SizedBox(width: 12),
                     _Toggle(value: _darkMode, onChanged: _setDarkMode),
                   ],
                 ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _RowText(
+                        title: t.language,
+                        subtitle: t.languageDesc,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _LanguagePicker(
+                      value: AppLanguage.current.value,
+                      onChanged: _setLanguage,
+                    ),
+                  ],
+                ),
               ],
             ),
             if (_notifications case final status?)
               _Group(
-                label: 'Notifications',
+                label: t.notifications,
                 children: [
                   Row(
                     children: [
                       Expanded(
                         child: _RowText(
-                          title: 'Timer notifications',
+                          title: t.timerNotifications,
                           subtitle: status == NotificationStatus.allowed
-                              ? 'On: lock screen timer and end alerts'
-                              : "Off: the lock screen timer and end alerts won't show",
+                              ? t.timerNotificationsOn
+                              : t.timerNotificationsOff,
                         ),
                       ),
                       if (status != NotificationStatus.allowed) ...[
                         const SizedBox(width: 12),
                         PaolaButton(
-                          label: 'Turn on',
+                          label: t.turnOn,
                           style: PaolaButtonStyle.secondary,
                           onPressed: _allowNotifications,
                         ),
@@ -257,20 +290,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ],
               ),
             _Group(
-              label: 'Data and privacy',
+              label: t.dataPrivacy,
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: _RowText(
-                        title: 'Delete my data',
-                        subtitle:
-                            'Remove all recorded data.',
+                        title: t.deleteMyData,
+                        subtitle: t.deleteMyDataDesc,
                       ),
                     ),
                     const SizedBox(width: 12),
                     PaolaButton(
-                      label: _requestingDeletion ? 'Requesting…' : 'Request',
+                      label: _requestingDeletion ? t.requesting : t.request,
                       style: PaolaButtonStyle.danger,
                       onPressed: _requestingDeletion ? null : _requestDeletion,
                     ),
@@ -284,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               child: TextButton.icon(
                 onPressed: _logout,
                 icon: const Icon(Icons.logout, size: 18),
-                label: const Text('Log out', style: TextStyle(fontSize: 16)),
+                label: Text(t.logOut, style: const TextStyle(fontSize: 16)),
                 style: TextButton.styleFrom(
                   foregroundColor: context.colors.textPrimary,
                   padding: EdgeInsets.zero,
@@ -350,10 +382,7 @@ class _RowText extends StatelessWidget {
         ),
         Text(
           subtitle,
-          style: TextStyle(
-            fontSize: 13,
-            color: context.colors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
       ],
     );
@@ -362,9 +391,14 @@ class _RowText extends StatelessWidget {
 
 class _NicknameField extends StatelessWidget {
   final TextEditingController controller;
+  final String hint;
   final ValueChanged<String> onSubmitted;
 
-  const _NicknameField({required this.controller, required this.onSubmitted});
+  const _NicknameField({
+    required this.controller,
+    required this.hint,
+    required this.onSubmitted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +415,7 @@ class _NicknameField extends StatelessWidget {
         cursorColor: context.colors.primary,
         style: TextStyle(fontSize: 15, color: context.colors.textInput),
         decoration: InputDecoration(
-          hintText: 'Nickname',
+          hintText: hint,
           isDense: true,
           filled: true,
           fillColor: context.colors.surface,
@@ -436,6 +470,61 @@ class _Toggle extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Segmented switch between the languages, styled like the timer's mode
+/// toggle. Each language is shown in itself, so it can always be found.
+class _LanguagePicker extends StatelessWidget {
+  final Language value;
+  final ValueChanged<Language> onChanged;
+
+  const _LanguagePicker({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border.all(color: context.colors.line),
+        borderRadius: BorderRadius.circular(PaolaRadius.control),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final language in Language.values)
+            Semantics(
+              selected: language == value,
+              button: true,
+              child: GestureDetector(
+                onTap: () => onChanged(language),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  color: language == value
+                      ? context.colors.textPrimary
+                      : context.colors.surface,
+                  child: Text(
+                    language.label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: language == value
+                          ? FontWeight.w500
+                          : FontWeight.w400,
+                      color: language == value
+                          ? context.colors.onTextPrimary
+                          : context.colors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
