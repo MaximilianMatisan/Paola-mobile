@@ -13,8 +13,8 @@
 //   GET  /api/user/preferences -> { preferences: {dark_mode, language, ...} }
 //   POST /api/user/preferences {all preference flags}
 //   POST /api/user/request_deletion {reasons, comment}
-//   POST /api/focus_period/create {session_start, is_pomodoro, periods}
-//   GET  /api/focus_period/byOwner -> { sessions: [{session_start, periods}] }
+//   POST /api/focus_period/create {session_start, is_pomodoro, periods, reflection}
+//   GET  /api/focus_period/byOwner -> { sessions: [{session_start, periods, reflection}] }
 //   POST /api/focus_period/delete {session_start}
 //
 // Login itself goes through AuthRepository (dio), which hands the session
@@ -33,6 +33,7 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_client.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
+import 'package:paola_mobile/features/timer/models/study_activity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppUser {
@@ -76,11 +77,23 @@ class FocusSession {
   final bool pomodoro;
   final List<FocusPeriod> periods;
 
+  /// What was done in the session; null if the user gave no reflection.
+  final List<ActivityReflection>? reflection;
+
   FocusSession({
     required this.start,
     required this.pomodoro,
     required this.periods,
+    this.reflection,
   });
+
+  FocusSession withReflection(List<ActivityReflection>? reflection) =>
+      FocusSession(
+        start: start,
+        pomodoro: pomodoro,
+        periods: periods,
+        reflection: reflection,
+      );
 
   Duration get duration =>
       periods.fold(Duration.zero, (sum, p) => sum + p.duration);
@@ -94,6 +107,13 @@ class FocusSession {
       for (final p in json['periods'] as List)
         FocusPeriod.fromJson(p as Map<String, dynamic>),
     ],
+    reflection: switch (json['reflection']) {
+      final List list => [
+        for (final r in list)
+          ?ActivityReflection.fromJson(r as Map<String, dynamic>),
+      ],
+      _ => null,
+    },
   );
 }
 
@@ -312,6 +332,8 @@ class PaolaApi {
       'session_start': session.start.millisecondsSinceEpoch,
       'is_pomodoro': session.pomodoro,
       'periods': [for (final p in session.periods) p.toJson()],
+      if (session.reflection case final reflection?)
+        'reflection': [for (final r in reflection) r.toJson()],
     });
     sessionsChanged.value++;
   }

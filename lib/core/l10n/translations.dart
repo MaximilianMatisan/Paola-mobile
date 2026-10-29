@@ -119,6 +119,33 @@ abstract class Translations {
   // ---------- Self assessment - features/timer/presentation ----------
   String get rateSession;
 
+  // ---------- Reflection - features/timer/presentation/reflection_dialog.dart ----------
+  String reflectionTitle(String duration);
+  String get reflectionActivitiesQuestion;
+  String reflectionHowWent(String activity);
+  String get reflectionTimeTitle;
+  String reflectionSum(String duration);
+  String get reflectionSplitEvenly;
+  String get reflectionTimeHint;
+  String get reflectionDiscard;
+  String get reflectionContinue;
+  String get reflectionNext;
+  String get reflectionSave;
+  String get activityPrepareLecture;
+  String get activityAttendLecture;
+  String get activityReviewLecture;
+  String get activityExercises;
+  String get activityQuizzes;
+  String get activityRepeatSummarize;
+  String get activityPeerExchange;
+  String get activityOrganize;
+  String get activityOther;
+  String get moodPerfect;
+  String get moodGood;
+  String get moodNormal;
+  String get moodBad;
+  String get moodMiserable;
+
   // ---------- History - features/study_history/presentation ----------
   String get thisWeek;
   String get sessions;
@@ -263,6 +290,38 @@ class TranslationsDe extends Translations {
 
   // ---------- Selbsteinschätzung ----------
   final rateSession = 'Bewerte deine Lernsitzung!';
+
+  // ---------- Reflexion ----------
+  String reflectionTitle(String duration) => '$duration gelernt';
+  final reflectionActivitiesQuestion =
+      'Welche Tätigkeiten hast du in dieser Lernsession durchgeführt?';
+  String reflectionHowWent(String activity) => 'Wie lief $activity?';
+  final reflectionTimeTitle = 'Zeit verteilen';
+  String reflectionSum(String duration) => 'Summe: $duration';
+  final reflectionSplitEvenly = 'Gleichmäßig verteilen';
+  final reflectionTimeHint =
+      'Die Zeit ist zunächst gleichmäßig verteilt. Mit den Reglern kannst du '
+      'sie anders auf die Tätigkeiten aufteilen, die Summe bleibt gleich. '
+      'Gesichert wird mit „Sichern“.';
+  final reflectionDiscard = 'Verwerfen';
+  final reflectionContinue = 'Weiterlernen';
+  final reflectionNext = 'Weiter';
+  final reflectionSave = 'Sichern';
+  final activityPrepareLecture = 'Vorlesung vorbereiten';
+  final activityAttendLecture = 'Lehrveranstaltung besuchen / Video ansehen';
+  final activityReviewLecture = 'Vorlesung nachbereiten';
+  final activityExercises =
+      'Übungsaufgaben bearbeiten (inkl. Hausaufgaben, Programmieren)';
+  final activityQuizzes = 'Quizze / Selbsttests durchführen';
+  final activityRepeatSummarize = 'Inhalte wiederholen und zusammenfassen';
+  final activityPeerExchange = 'Mit Studierenden austauschen (Lerngruppe)';
+  final activityOrganize = 'Lernen organisieren (planen, Ziele setzen)';
+  final activityOther = 'Weiteres';
+  final moodPerfect = 'Perfekt';
+  final moodGood = 'Gut';
+  final moodNormal = 'Normal';
+  final moodBad = 'Schlecht';
+  final moodMiserable = 'Miserabel';
 
   // ---------- Verlauf ----------
   final thisWeek = 'Diese Woche';
@@ -423,6 +482,38 @@ class TranslationsEn extends Translations {
 
   // ---------- Self assessment ----------
   final rateSession = 'Rate your study session!';
+
+  // ---------- Reflection ----------
+  String reflectionTitle(String duration) => '$duration studied';
+  final reflectionActivitiesQuestion =
+      'Which activities did you do in this study session?';
+  String reflectionHowWent(String activity) => 'How did "$activity" go?';
+  final reflectionTimeTitle = 'Split the time';
+  String reflectionSum(String duration) => 'Total: $duration';
+  final reflectionSplitEvenly = 'Split evenly';
+  final reflectionTimeHint =
+      'The time starts out split evenly. Use the sliders to divide it '
+      'differently between the activities; the total stays the same. '
+      'Tap "Save" to keep it.';
+  final reflectionDiscard = 'Discard';
+  final reflectionContinue = 'Keep studying';
+  final reflectionNext = 'Next';
+  final reflectionSave = 'Save';
+  final activityPrepareLecture = 'Prepare a lecture';
+  final activityAttendLecture = 'Attend a class / watch a video';
+  final activityReviewLecture = 'Review a lecture';
+  final activityExercises =
+      'Work on exercises (incl. homework, programming)';
+  final activityQuizzes = 'Take quizzes / self-tests';
+  final activityRepeatSummarize = 'Revise and summarise content';
+  final activityPeerExchange = 'Talk with fellow students (study group)';
+  final activityOrganize = 'Organise studying (plan, set goals)';
+  final activityOther = 'Other';
+  final moodPerfect = 'Perfect';
+  final moodGood = 'Good';
+  final moodNormal = 'Okay';
+  final moodBad = 'Bad';
+  final moodMiserable = 'Miserable';
 
   // ---------- History ----------
   final thisWeek = 'This week';

@@ -17,6 +17,7 @@ import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/features/timer/models/timer_mode.dart';
+import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
 import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
 import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
 import 'package:paola_mobile/features/timer/util/timer_live_activity.dart';
@@ -202,16 +203,25 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   /// Saves the work session recorded so far with its movement timeline.
   void _saveSession() {
+    final session = _takeSession();
+    if (session != null) _upload(session);
+  }
+
+  /// Stops recording and hands out the work session so far, if there is one.
+  FocusSession? _takeSession() {
     _sensor.stop();
     final periods = _sensor.takePeriods();
     final start = _sessionStart;
     _sessionStart = null;
-    if (start == null || periods.isEmpty) return;
-    final session = FocusSession(
+    if (start == null || periods.isEmpty) return null;
+    return FocusSession(
       start: start,
       pomodoro: _mode == TimerMode.pomodoro,
       periods: periods,
     );
+  }
+
+  void _upload(FocusSession session) {
     PaolaApi.instance.saveSession(session).catchError((Object e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -227,23 +237,51 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   void _tick() {
     if (_mode == TimerMode.pomodoro && _elapsed >= _phaseTotal) {
-      if (!_onBreak) _saveSession();
-      if (!_onBreak && _breakMinutes > 0) {
+      if (_onBreak) {
+        _reset(keepAlerts: true);
+        _notify(context.t.breakOver, context.t.nextRound);
+        return;
+      }
+      final session = _takeSession();
+      if (_breakMinutes > 0) {
         _banked = Duration.zero;
         _onBreak = true;
         _start();
-        _notify(context.t.pomodoroFinished, context.t.breakTime(_breakMinutes));
       } else {
-        final wasBreak = _onBreak;
         _reset(keepAlerts: true);
+      }
+      if (session != null) {
+        _reflect(session);
+      } else {
         _notify(
-          wasBreak ? context.t.breakOver : context.t.pomodoroFinished,
-          wasBreak ? context.t.nextRound : context.t.wellDone,
+          context.t.pomodoroFinished,
+          _breakMinutes > 0
+              ? context.t.breakTime(_breakMinutes)
+              : context.t.wellDone,
         );
       }
       return;
     }
     setState(() {});
+  }
+
+  /// Asks what was done in the finished pomodoro (the break already runs
+  /// behind the dialog), then saves [session] accordingly.
+  Future<void> _reflect(FocusSession session) async {
+    final result = await showReflection(context, studied: session.duration);
+    switch (result.action) {
+      case ReflectionAction.discard:
+        return;
+      case ReflectionAction.save:
+        _upload(session.withReflection(result.reflection));
+      case ReflectionAction.skip:
+        _upload(session);
+      case ReflectionAction.keepStudying:
+        _upload(session);
+        if (!mounted) return;
+        _reset();
+        _start();
+    }
   }
 
   /// Mirrors the current state in the lock screen notification.
