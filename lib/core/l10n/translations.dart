@@ -82,11 +82,10 @@ abstract class Translations {
   String ofWork(String work);
   String get unitMin;
   String get unitSec;
-  String get more;
-  String get less;
+  String get tapToStart;
+  String get tapToPause;
+  String get tapToResume;
   String get start;
-  String get pause;
-  String get resume;
   String get finishAndSave;
   String get discardSession;
   String get discardTitle;
@@ -248,16 +247,15 @@ class TranslationsDe extends Translations {
   String ofWork(String work) => 'von $work';
   final unitMin = 'Min';
   final unitSec = 'Sek';
-  final more = 'Mehr';
-  final less = 'Weniger';
+  final tapToStart = 'Tippe zum Starten';
+  final tapToPause = 'Tippe zum Pausieren';
+  final tapToResume = 'Tippe zum Fortsetzen';
   final start = 'Starten';
-  final pause = 'Pausieren';
-  final resume = 'Fortsetzen';
   final finishAndSave = 'Beenden und speichern';
   final discardSession = 'Sitzung verwerfen';
   final discardTitle = 'Diese Sitzung löschen?';
   final discardMessage = 'Die bisher erfasste Zeit wird verworfen.';
-  final pausedPickedUp = 'Timer pausiert: Handy wurde hochgenommen';
+  final pausedPickedUp = 'Timer pausiert: Handy wurde aufgehoben';
   String saveSessionFailed(Object error) =>
       'Speichern der Sitzung fehlgeschlagen: $error';
   final pomodoroFinished = 'Pomodoro beendet';
@@ -274,15 +272,14 @@ class TranslationsDe extends Translations {
       'Sperrbildschirm-Timer fehlgeschlagen: $error';
   final phoneResting = 'Handy liegt still';
   final sensorUnavailable = 'Bewegungssensor nicht verfügbar';
-  String phoneMoved(int seconds) => 'Handy bewegt. Pause in $seconds s';
+  String phoneMoved(int seconds) => 'Handy bewegt. Pause beginnt in $seconds s';
   final history = 'Verlauf';
   String yesterdayMinutes(int minutes) => 'Gestern $minutes Min';
 
   // ---------- Timer-Benachrichtigungen ----------
   final notificationsOffApp = 'Benachrichtigungen sind für Paola ausgeschaltet';
-  final notificationsOffTimer =
-      'Timer-Benachrichtigungen sind für Paola ausgeschaltet';
-  String pausedAt(String time) => 'Pausiert · $time';
+  final notificationsOffTimer = 'Timer-Benachrichtigungen sind für Paola ausgeschaltet';
+  String pausedAt(String time) => 'Pausiert - $time';
   final channelTimer = 'Lern-Timer';
   final channelTimerDesc = 'Zeigt den laufenden Timer auf dem Sperrbildschirm';
   final channelAlerts = 'Timer beendet';
@@ -293,8 +290,7 @@ class TranslationsDe extends Translations {
 
   // ---------- Reflexion ----------
   String reflectionTitle(String duration) => '$duration gelernt';
-  final reflectionActivitiesQuestion =
-      'Welche Tätigkeiten hast du in dieser Lernsession durchgeführt?';
+  final reflectionActivitiesQuestion = 'Welche Aktivität(-en) hast du in dieser Lernsession durchgeführt?';
   String reflectionHowWent(String activity) => 'Wie lief $activity?';
   final reflectionTimeTitle = 'Zeit verteilen';
   String reflectionSum(String duration) => 'Summe: $duration';
@@ -302,7 +298,7 @@ class TranslationsDe extends Translations {
   final reflectionTimeHint =
       'Die Zeit ist zunächst gleichmäßig verteilt. Mit den Reglern kannst du '
       'sie anders auf die Tätigkeiten aufteilen, die Summe bleibt gleich. '
-      'Gesichert wird mit „Sichern“.';
+      'Gespeichert wird mit „Sichern“.';
   final reflectionDiscard = 'Verwerfen';
   final reflectionContinue = 'Weiterlernen';
   final reflectionNext = 'Weiter';
@@ -310,11 +306,10 @@ class TranslationsDe extends Translations {
   final activityPrepareLecture = 'Vorlesung vorbereiten';
   final activityAttendLecture = 'Lehrveranstaltung besuchen / Video ansehen';
   final activityReviewLecture = 'Vorlesung nachbereiten';
-  final activityExercises =
-      'Übungsaufgaben bearbeiten (inkl. Hausaufgaben, Programmieren)';
+  final activityExercises = 'Übungsaufgaben bearbeiten (inkl. Hausaufgaben, Programmieren)';
   final activityQuizzes = 'Quizze / Selbsttests durchführen';
   final activityRepeatSummarize = 'Inhalte wiederholen und zusammenfassen';
-  final activityPeerExchange = 'Mit Studierenden austauschen (Lerngruppe)';
+  final activityPeerExchange = 'Mit Kommilitonen austauschen (z.B. Lerngruppe)';
   final activityOrganize = 'Lernen organisieren (planen, Ziele setzen)';
   final activityOther = 'Weiteres';
   final moodPerfect = 'Perfekt';
@@ -328,12 +323,9 @@ class TranslationsDe extends Translations {
   final sessions = 'Sitzungen';
   final pickedUp = 'Hochgenommen';
   final paused = 'Pausiert';
-  String loadSessionsFailed(Object error) =>
-      'Sitzungen konnten nicht geladen werden: $error';
+  String loadSessionsFailed(Object error) => 'Sitzungen konnten nicht geladen werden: $error';
   final noSessions = 'Noch keine Sitzungen. Beendete Timer erscheinen hier.';
-  String deleteSessionMessage(String duration, String mode) =>
-      '$duration ($mode) wird aus deinem Verlauf entfernt. Das kann nicht '
-      'rückgängig gemacht werden.';
+  String deleteSessionMessage(String duration, String mode) => '$duration ($mode) wird aus deinem Verlauf entfernt. Das kann nicht rückgängig gemacht werden.';
   String deletingFailed(Object error) => 'Löschen fehlgeschlagen: $error';
   final deleteSession = 'Sitzung löschen';
   final notPickedUp = 'Nicht hochgenommen';
@@ -444,11 +436,10 @@ class TranslationsEn extends Translations {
   String ofWork(String work) => 'of $work';
   final unitMin = 'min';
   final unitSec = 'sec';
-  final more = 'More';
-  final less = 'Less';
+  final tapToStart = 'Tap to start';
+  final tapToPause = 'Tap to pause';
+  final tapToResume = 'Tap to resume';
   final start = 'Start';
-  final pause = 'Pause';
-  final resume = 'Resume';
   final finishAndSave = 'Finish and save';
   final discardSession = 'Discard session';
   final discardTitle = 'Delete this session?';

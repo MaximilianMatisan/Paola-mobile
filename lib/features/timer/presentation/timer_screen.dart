@@ -34,7 +34,7 @@ class TimerScreen extends StatefulWidget {
 class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _breakChoices = [0, 5, 10, 15, 20];
   static const _maxMinutes = 99;
-  static const _secondStep = 5;
+  static const _secondChoices = [0, 30];
 
   TimerMode _mode = TimerMode.pomodoro;
   int _workSeconds = 25 * 60;
@@ -399,6 +399,16 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
               const SizedBox(height: 24),
               _Dial(
                 progress: configuring ? 0 : _progress(),
+                hint: _running
+                    ? context.t.tapToPause
+                    : configuring
+                    ? context.t.tapToStart
+                    : context.t.tapToResume,
+                onTap: _running
+                    ? _pause
+                    : pomodoro && configuring && _workSeconds == 0
+                    ? null
+                    : _start,
                 child: configuring
                     ? (pomodoro ? _pomodoroSetter() : const _DialTime('00:00'))
                     : _runningDisplay(),
@@ -465,11 +475,10 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _DigitSetter(
+        _WheelSetter(
+          values: [for (var m = 0; m <= _maxMinutes; m++) m],
           value: minutes,
           unit: context.t.unitMin,
-          max: _maxMinutes,
-          step: 1,
           onChanged: (m) => _setWork(m, seconds),
         ),
         // Bottom padding matches the unit label, so the colon sits on the
@@ -485,11 +494,10 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
             ),
           ),
         ),
-        _DigitSetter(
+        _WheelSetter(
+          values: _secondChoices,
           value: seconds,
           unit: context.t.unitSec,
-          max: 59,
-          step: _secondStep,
           onChanged: (sec) => _setWork(minutes, sec),
         ),
       ],
@@ -559,27 +567,17 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   ];
 
   List<Widget> _runControls() => [
-    Row(
-      children: [
-        Expanded(
-          child: PaolaButton(
-            label: _running ? context.t.pause : context.t.resume,
-            style: PaolaButtonStyle.secondary,
-            onPressed: _running ? _pause : _start,
-          ),
+    // Pausing and resuming is done by tapping the dial.
+    if (!_onBreak) ...[
+      SizedBox(
+        width: double.infinity,
+        child: PaolaButton(
+          label: context.t.finishAndSave,
+          onPressed: _finish,
         ),
-        if (!_onBreak) ...[
-          const SizedBox(width: 12),
-          Expanded(
-            child: PaolaButton(
-              label: context.t.finishAndSave,
-              onPressed: _finish,
-            ),
-          ),
-        ],
-      ],
-    ),
-    const SizedBox(height: 8),
+      ),
+      const SizedBox(height: 8),
+    ],
     PaolaButton(
       label: context.t.discardSession,
       style: PaolaButtonStyle.danger,
@@ -743,12 +741,20 @@ class _ModeToggle extends StatelessWidget {
   }
 }
 
-/// Thin ring with the time in the middle.
+/// Thin ring with the time in the middle. Tapping it starts, pauses or
+/// resumes the timer; [hint] above the time says which.
 class _Dial extends StatelessWidget {
   final double progress;
+  final String hint;
+  final VoidCallback? onTap;
   final Widget child;
 
-  const _Dial({required this.progress, required this.child});
+  const _Dial({
+    required this.progress,
+    required this.hint,
+    required this.onTap,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -758,11 +764,42 @@ class _Dial extends StatelessWidget {
           final size = math.min(constraints.maxWidth, 272.0);
           return SizedBox.square(
             dimension: size,
-            child: CustomPaint(
-              painter: _RingPainter(progress.clamp(0.0, 1.0), context.colors),
-              child: Padding(
-                padding: EdgeInsets.all(size * 0.14),
-                child: FittedBox(fit: BoxFit.scaleDown, child: child),
+            child: Semantics(
+              button: true,
+              label: hint,
+              child: Material(
+                type: MaterialType.transparency,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTap,
+                  child: CustomPaint(
+                    painter: _RingPainter(
+                      progress.clamp(0.0, 1.0),
+                      context.colors,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(size * 0.14),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              hint,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: context.colors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            child,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           );
@@ -802,156 +839,92 @@ class _DialTime extends StatelessWidget {
   }
 }
 
-/// Two-digit value with small chevrons above and below and the unit
-/// underneath. The value can also be typed.
-class _DigitSetter extends StatefulWidget {
+/// Two-digit value on a wheel that is scrolled up and down, with the unit
+/// underneath.
+class _WheelSetter extends StatefulWidget {
+  final List<int> values;
   final int value;
   final String unit;
-  final int max;
-  final int step;
   final ValueChanged<int> onChanged;
 
-  const _DigitSetter({
+  const _WheelSetter({
+    required this.values,
     required this.value,
     required this.unit,
-    required this.max,
-    required this.step,
     required this.onChanged,
   });
 
   @override
-  State<_DigitSetter> createState() => _DigitSetterState();
+  State<_WheelSetter> createState() => _WheelSetterState();
 }
 
-class _DigitSetterState extends State<_DigitSetter> {
-  late final _ctrl = TextEditingController(text: _padded);
-  final _focus = FocusNode();
+class _WheelSetterState extends State<_WheelSetter> {
+  static const _itemHeight = 64.0;
 
-  String get _padded => widget.value.toString().padLeft(2, '0');
+  late final _ctrl = FixedExtentScrollController(
+    initialItem: math.max(widget.values.indexOf(widget.value), 0),
+  );
 
-  @override
-  void initState() {
-    super.initState();
-    _focus.addListener(_onFocusChange);
-  }
+  /// The wheel loops, so its item index keeps counting past the list.
+  int get _shown => widget.values[_ctrl.selectedItem % widget.values.length];
 
   @override
-  void didUpdateWidget(_DigitSetter old) {
+  void didUpdateWidget(_WheelSetter old) {
     super.didUpdateWidget(old);
-    // Arrow taps change the value from outside; don't overwrite while typing.
-    if (!_focus.hasFocus && _ctrl.text != _padded) _ctrl.text = _padded;
+    final i = widget.values.indexOf(widget.value);
+    if (i >= 0 && _ctrl.hasClients && _shown != widget.value) {
+      _ctrl.jumpToItem(i);
+    }
   }
 
   @override
   void dispose() {
     _ctrl.dispose();
-    _focus.dispose();
     super.dispose();
-  }
-
-  void _onFocusChange() {
-    if (_focus.hasFocus) {
-      _ctrl.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: _ctrl.text.length,
-      );
-    } else {
-      _ctrl.text = _padded; // show the (clamped) value with a leading zero
-    }
-  }
-
-  void _onTyped(String text) {
-    final n = int.tryParse(text);
-    if (n != null) widget.onChanged(math.min(n, widget.max));
   }
 
   @override
   Widget build(BuildContext context) {
-    final v = widget.value;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _StepButton(
-          icon: Icons.keyboard_arrow_up,
-          tooltip: context.t.more,
-          onPressed: v < widget.max
-              ? () => widget.onChanged(math.min(v + widget.step, widget.max))
-              : null,
-        ),
         SizedBox(
-          width: 76,
-          child: TextField(
+          width: 84,
+          height: _itemHeight * 2.4,
+          child: ListWheelScrollView.useDelegate(
             controller: _ctrl,
-            focusNode: _focus,
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(2),
-            ],
-            onChanged: _onTyped,
-            onTapOutside: (_) => _focus.unfocus(),
-            cursorColor: context.colors.primary,
-            style: TextStyle(
-              fontSize: 56,
-              height: 1.1,
-              fontWeight: FontWeight.w300,
-              color: context.colors.textPrimary,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
+            itemExtent: _itemHeight,
+            diameterRatio: 1.6,
+            overAndUnderCenterOpacity: 0.3,
+            physics: const FixedExtentScrollPhysics(),
+            onSelectedItemChanged: (i) {
+              HapticFeedback.selectionClick();
+              widget.onChanged(widget.values[i % widget.values.length]);
+            },
+            childDelegate: ListWheelChildLoopingListDelegate(
+              children: [
+                for (final v in widget.values)
+                  Center(
+                    child: Text(
+                      v.toString().padLeft(2, '0'),
+                      style: TextStyle(
+                        fontSize: 56,
+                        height: 1.1,
+                        fontWeight: FontWeight.w300,
+                        color: context.colors.textPrimary,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-        ),
-        _StepButton(
-          icon: Icons.keyboard_arrow_down,
-          tooltip: context.t.less,
-          onPressed: v > 0
-              ? () => widget.onChanged(math.max(v - widget.step, 0))
-              : null,
         ),
         Text(
           widget.unit,
           style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
       ],
-    );
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onPressed;
-
-  const _StepButton({
-    required this.icon,
-    required this.tooltip,
-    this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkResponse(
-        onTap: onPressed,
-        radius: 20,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          child: Icon(
-            icon,
-            size: 24,
-            color: onPressed == null
-                ? context.colors.track
-                : context.colors.textSecondary,
-          ),
-        ),
-      ),
     );
   }
 }

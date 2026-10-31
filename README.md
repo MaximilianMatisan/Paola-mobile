@@ -20,7 +20,7 @@
   * [ ] "sync mit web applikation" option in einstellungen
     * [ ] datenschutz
   * [ ] qr code wie bei whatsapp zum sync
-* [ ] translations
+* [x] translations
 * [ ] ob es nachtrag ist oder nicht in study log schreiben
   * [ ] zeitverteilung usw. nachtragen können
   * [ ] ablenkung auf aufgaben beziehen
@@ -28,7 +28,7 @@
 * [ ] statt home analysen
 * [ ] pomodoro vs stopwatch als default preference
 * [ ] über zeitstrahle balkenstiagramm aktuelle woche
-* [ ] auf timer tippen können zum starten/pause
+* [x] auf timer tippen können zum starten/pause
 * [ ] 5 sekunden extra die nicht angezeigt werden
 * [ ] benachrichtungen einstellungen
 * [ ] charts merge into the main branch
