@@ -124,6 +124,13 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
     }
 
     func getShownTime(context: ActivityViewContext<LiveActivitiesAppAttributes>) -> Text {
+        if sharedDefault.bool(forKey: context.attributes.prefixedKey("hideTime")) {
+            return Text("Paola Timer")
+                .font(.title)
+                .bold()
+                .foregroundStyle(getTextColor(context: context))
+        }
+
         let currentSegmentStartTime = Int(sharedDefault.string(forKey: context.attributes.prefixedKey("currentSegmentStartTimeMs")) ?? "0") ?? 0
         let accumulatedSeconds = Int(sharedDefault.string(forKey: context.attributes.prefixedKey("accumulatedSeconds")) ?? "0") ?? 0
         let isPaused = sharedDefault.bool(forKey: context.attributes.prefixedKey("isPaused"))

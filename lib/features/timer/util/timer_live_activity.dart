@@ -26,11 +26,14 @@ class TimerLiveActivity {
   bool get active => _activityId != null;
 
   /// Starts the activity, or updates it if one is already shown.
+  /// With [hideTime] it shows dots instead of the time; the time is still
+  /// passed along, so pausing there keeps the app in sync.
   void show({
     required ColorScheme colors,
     required DateTime segmentStart,
     required Duration accumulated,
     required bool paused,
+    required bool hideTime,
   }) {
     if (!supported) return;
     final data = {
@@ -38,6 +41,7 @@ class TimerLiveActivity {
           .toString(),
       'accumulatedSeconds': accumulated.inSeconds.toString(),
       'isPaused': paused,
+      'hideTime': hideTime,
     };
     _run(() async {
       if (_activityId == null) {

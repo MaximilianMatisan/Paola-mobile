@@ -87,11 +87,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    HideTime.enabled.addListener(_onHideTimeChanged);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    HideTime.enabled.removeListener(_onHideTimeChanged);
     _ticker?.cancel();
     _sensor.dispose();
     TimerNotification.cancel();
@@ -157,7 +159,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       segmentStart: _runStart ?? DateTime.now(),
       accumulated: _banked,
       paused: !_running,
+      hideTime: HideTime.enabled.value,
     );
+  }
+
+  /// The setting was switched while a Live Activity is shown.
+  void _onHideTimeChanged() {
+    if (_liveActivity.active) _syncLiveActivity();
   }
 
   /// [since] resumes a run that was started in the Live Activity.

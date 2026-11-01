@@ -37,7 +37,7 @@
 * [ ] max mean min picked up times
 * [x] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
   * [ ] serverseitig persistieren wenn gitlab wieder geht
-  * [ ] richtige darstellung in live activity notification
+  * [x] richtige darstellung in live activity notification
 * [ ] irgendwann erinnern wenn timer nicht angehalten -> nach 4h ?
 
 
