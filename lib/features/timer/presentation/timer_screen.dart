@@ -20,6 +20,7 @@ import 'package:paola_mobile/features/timer/models/timer_mode.dart';
 import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
 import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
 import 'package:paola_mobile/features/timer/util/flowtime.dart';
+import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
 import 'package:paola_mobile/features/timer/util/timer_live_activity.dart';
 
@@ -444,25 +445,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                 onChanged: _setMode,
               ),
               const SizedBox(height: 24),
-              _Dial(
-                progress: configuring ? 0 : _progress(),
-                hint: _flowStudying
-                    ? context.t.tapForBreak
-                    : _running
-                    ? context.t.tapToPause
-                    : configuring
-                    ? context.t.tapToStart
-                    : context.t.tapToResume,
-                onTap: _flowStudying
-                    ? _takeBreak
-                    : _running
-                    ? _pause
-                    : pomodoro && configuring && _workSeconds == 0
-                    ? null
-                    : _start,
-                child: configuring
-                    ? (pomodoro ? _pomodoroSetter() : const _DialTime('00:00'))
-                    : _runningDisplay(),
+              ListenableBuilder(
+                listenable: HideTime.enabled,
+                builder: (context, _) => _dial(pomodoro, configuring),
               ),
               if (_running && !_onBreak) ...[
                 const SizedBox(height: 24),
@@ -494,6 +479,41 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _dial(bool pomodoro, bool configuring) {
+    // With the time hidden the ring stays empty too, since it would show
+    // the progress.
+    final hidden = HideTime.enabled.value && !configuring && !_onBreak;
+    return _Dial(
+      progress: configuring || hidden ? 0 : _progress(),
+      hint: _flowStudying
+          ? context.t.tapForBreak
+          : _running
+          ? context.t.tapToPause
+          : configuring
+          ? context.t.tapToStart
+          : context.t.tapToResume,
+      onTap: _flowStudying
+          ? _takeBreak
+          : _running
+          ? _pause
+          : pomodoro && configuring && _workSeconds == 0
+          ? null
+          : _start,
+      child: configuring
+          ? (pomodoro ? _pomodoroSetter() : const _DialTime('00:00'))
+          : hidden
+          ? _HiddenTime(
+              running: _running,
+              label: switch (_mode) {
+                TimerMode.pomodoro => context.t.ofWork(_workText),
+                TimerMode.flowtime => context.t.flowtime,
+                TimerMode.stopwatch => context.t.stopwatch,
+              },
+            )
+          : _runningDisplay(),
     );
   }
 
@@ -904,6 +924,96 @@ class _DialTime extends StatelessWidget {
             label!,
             style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
+      ],
+    );
+  }
+}
+
+class _HiddenTime extends StatefulWidget {
+  final bool running;
+  final String label;
+
+  const _HiddenTime({required this.running, required this.label});
+
+  @override
+  State<_HiddenTime> createState() => _HiddenTimeState();
+}
+
+class _HiddenTimeState extends State<_HiddenTime>
+    with SingleTickerProviderStateMixin {
+  static const _dotCount = 3;
+
+  late final _wave = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.running) _wave.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_HiddenTime old) {
+    super.didUpdateWidget(old);
+    if (widget.running && !_wave.isAnimating) {
+      _wave.repeat();
+    } else if (!widget.running && _wave.isAnimating) {
+      _wave.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _wave.dispose();
+    super.dispose();
+  }
+
+  /// 0.25 base opacity
+  /// increasing to 1 if wave passes dot i
+  double _opacity(int i) {
+    if (!widget.running) return 0.25;
+    final phase = (_wave.value - i / _dotCount) % 1.0;
+    return 0.25 + 0.75 * math.max(0.0, math.sin(phase * 2 * math.pi));
+  }
+
+  static const double _heightOfNumbersDisplay = 77;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: _heightOfNumbersDisplay,
+          child: AnimatedBuilder(
+            animation: _wave,
+            builder: (context, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < _dotCount; i++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Opacity(
+                      opacity: _opacity(i),
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: context.colors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        Text(
+          widget.label,
+          style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
+        ),
       ],
     );
   }

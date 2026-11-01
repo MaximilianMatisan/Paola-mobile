@@ -35,7 +35,9 @@
 * [ ] beim wieder hinlegen evtl. ohne nahcfragen wieder starten
 * [ ] pomodoro weiterlaufen lassen wenn seite verlassen mit warnung
 * [ ] max mean min picked up times
-* [ ] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
+* [x] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
+  * [ ] serverseitig persistieren wenn gitlab wieder geht
+  * [ ] richtige darstellung in live activity notification
 * [ ] irgendwann erinnern wenn timer nicht angehalten -> nach 4h ?
 
 

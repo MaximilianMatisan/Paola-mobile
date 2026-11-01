@@ -177,6 +177,8 @@ abstract class Translations {
   String get darkMode;
   String get darkModeDesc;
   String darkModeSaveFailed(String error);
+  String get hideTime;
+  String get hideTimeDesc;
   String get language;
   String get languageDesc;
   String languageSaveFailed(String error);
@@ -365,6 +367,9 @@ class TranslationsDe extends Translations {
   final darkModeDesc = 'Dunkles Farbschema verwenden';
   String darkModeSaveFailed(String error) =>
       'Dark Mode konnte nicht gespeichert werden: $error';
+  final hideTime = 'Zeit ausblenden';
+  final hideTimeDesc =
+      'Beim Lernen drei Punkte statt der Zeit zeigen. Pausen bleiben sichtbar.';
   final language = 'Sprache';
   final languageDesc = 'Sprache der App';
   String languageSaveFailed(String error) =>
@@ -556,6 +561,9 @@ class TranslationsEn extends Translations {
   final darkMode = 'Dark mode';
   final darkModeDesc = 'Use a dark color scheme';
   String darkModeSaveFailed(String error) => 'Could not save dark mode: $error';
+  final hideTime = 'Hide time';
+  final hideTimeDesc =
+      'Show three dots instead of the time while studying. Breaks stay visible.';
   final language = 'Language';
   final languageDesc = 'Language of the app';
   String languageSaveFailed(String error) => 'Could not save language: $error';

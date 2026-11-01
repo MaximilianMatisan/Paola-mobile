@@ -9,6 +9,7 @@ import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/theme.dart';
 import 'package:paola_mobile/features/auth/presentation/login_page.dart';
+import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/core/util/notifications.dart';
 
 void main() async {
@@ -23,6 +24,7 @@ void main() async {
   final steps = <String, Future<void> Function()>{
     'Loading .env': () => dotenv.load(fileName: ".env"),
     'Loading language': AppLanguage.init,
+    'Loading timer options': HideTime.init,
     'Restoring session': PaolaApi.instance.init,
     'Setting up notifications': initNotifications,
   };
