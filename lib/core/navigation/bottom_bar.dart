@@ -18,8 +18,9 @@ class CustomBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final items = [
-      _NavItem(Icons.home_outlined, context.t.navHome),
+      // Home is hidden for now, see MainEnvironment.
       _NavItem(Icons.schedule_outlined, context.t.navTimer),
+      _NavItem(Icons.bar_chart_outlined, context.t.history),
       _NavItem(Icons.settings_outlined, context.t.navSettings),
     ];
 
@@ -86,45 +87,45 @@ class _NavBarItem extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final Color contentColor =
-    selected ? scheme.onSurface : scheme.onSurfaceVariant;
+    final Color contentColor = selected
+        ? scheme.onSurface
+        : scheme.onSurfaceVariant;
 
-    final TextStyle labelStyle = (theme.textTheme.labelLarge ??
-        const TextStyle())
-        .copyWith(
-      fontSize: _navBarFontSize,
-      color: contentColor,
-      fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-    );
+    final TextStyle labelStyle =
+        (theme.textTheme.labelLarge ?? const TextStyle()).copyWith(
+          fontSize: _navBarFontSize,
+          color: contentColor,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+        );
 
     return InkWell(
-        onTap: onTap,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: defaultIconPixelSize, color: contentColor),
-              const SizedBox(height: _spaceBetweenElements),
-              AnimatedDefaultTextStyle(
-                style: labelStyle,
-                duration: _duration,
-                child: Text(label),
+      onTap: onTap,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: defaultIconPixelSize, color: contentColor),
+            const SizedBox(height: _spaceBetweenElements),
+            AnimatedDefaultTextStyle(
+              style: labelStyle,
+              duration: _duration,
+              child: Text(label),
+            ),
+            const SizedBox(height: _spaceBetweenElements),
+            // Selected tab line
+            AnimatedContainer(
+              duration: _duration,
+              curve: Curves.easeOutCubic,
+              width: selected ? _selectedTabLineWidth : 0,
+              height: selected ? _selectedTabLineHeight : 0,
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: BorderRadius.circular(5),
               ),
-              const SizedBox(height: _spaceBetweenElements),
-              // Selected tab line
-              AnimatedContainer(
-                duration: _duration,
-                curve: Curves.easeOutCubic,
-                width: selected ? _selectedTabLineWidth : 0,
-                height: selected ? _selectedTabLineHeight : 0,
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

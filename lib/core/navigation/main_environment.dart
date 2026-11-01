@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:paola_mobile/features/home/presentation/home_screen.dart';
 import 'package:paola_mobile/features/study_history/presentation/history_screen.dart';
 import 'package:paola_mobile/features/timer/presentation/timer_screen.dart';
 
@@ -15,24 +14,20 @@ class MainEnvironment extends StatefulWidget {
 
 class _MainEnvironmentState extends State<MainEnvironment> {
   // Opens on the timer.
-  int _currentIndex = 1;
+  int _currentIndex = 0;
 
-  // The history has no tab; it is opened from below the timer and belongs to
-  // the timer tab.
-  bool _showHistory = false;
+  static const _historyTab = 1;
 
   @override
   Widget build(BuildContext context) {
+    // The home screen (features/home) is hidden for now; add it back here
+    // and in CustomBottomNavigation to show it again.
+    // IndexedStack keeps the timer running while another tab is open.
     final pages = [
-      const HomeScreen(),
-      // IndexedStack keeps the timer running while the history is open.
-      IndexedStack(
-        index: _showHistory ? 1 : 0,
-        children: [
-          TimerScreen(onOpenHistory: () => setState(() => _showHistory = true)),
-          HistoryScreen(onBack: () => setState(() => _showHistory = false)),
-        ],
+      TimerScreen(
+        onOpenHistory: () => setState(() => _currentIndex = _historyTab),
       ),
+      const HistoryScreen(),
       const SettingsScreen(),
     ];
 
@@ -40,12 +35,7 @@ class _MainEnvironmentState extends State<MainEnvironment> {
       body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: CustomBottomNavigation(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-            _showHistory = false;
-          });
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
       ),
     );
   }

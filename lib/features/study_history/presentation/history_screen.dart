@@ -6,6 +6,7 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/features/study_history/presentation/widgets/week_chart.dart';
 
 class HistoryScreen extends StatefulWidget {
   /// Called by the back button in the top left corner.
@@ -126,6 +127,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
             children: [
               ScreenTitle(context.t.history, onBack: widget.onBack),
+              const SizedBox(height: 20),
+              GroupLabel(context.t.thisWeek),
+              const SizedBox(height: 8),
+              WeekChart(sessions: _sessions),
               const SizedBox(height: 20),
               Row(
                 children: [

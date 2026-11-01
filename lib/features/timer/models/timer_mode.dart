@@ -2,7 +2,8 @@ import 'package:paola_mobile/core/util/displayable.dart';
 
 enum TimerMode implements Displayable{
   stopwatch,
-  pomodoro;
+  pomodoro,
+  flowtime;
 
   @override
   String toDisplayableString() {
@@ -11,6 +12,8 @@ enum TimerMode implements Displayable{
         return "STOPWATCH";
       case pomodoro:
         return "POMODORO";
+      case flowtime:
+        return "FLOWTIME";
     }
   }
 }

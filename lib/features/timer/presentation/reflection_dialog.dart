@@ -16,7 +16,8 @@ enum ReflectionAction {
   /// Closed without answering; the session is still saved.
   skip,
 
-  /// Like [skip], and the next pomodoro starts right away.
+  /// Pomodoro: like [skip], and the next pomodoro starts right away.
+  /// Flowtime: the break is skipped and the same study block goes on.
   keepStudying,
 
   /// The session is thrown away.

@@ -75,6 +75,10 @@ abstract class Translations {
   String get timerTitle;
   String get pomodoro;
   String get stopwatch;
+  String get flowtime;
+  String get tapForBreak;
+  String get flowtimeHint;
+  String flowtimeEarned(int minutes);
   String get breakLabel;
   String get breakLength;
   String get breakNone;
@@ -240,6 +244,10 @@ class TranslationsDe extends Translations {
   final timerTitle = 'Timer';
   final pomodoro = 'Pomodoro';
   final stopwatch = 'Stoppuhr';
+  final flowtime = 'Flowtime';
+  final tapForBreak = 'Tippe für deine Pause';
+  final flowtimeHint = 'Lerne, solange du dich konzentrieren kannst. Die Pause richtet sich nach deiner Lernzeit: bis 25 Min → 5 Min, bis 50 Min → 8 Min, länger → 10 Min.';
+  String flowtimeEarned(int minutes) => 'Pause: $minutes Min';
   final breakLabel = 'Pause';
   final breakLength = 'Pausenlänge';
   final breakNone = 'Keine';
@@ -321,15 +329,15 @@ class TranslationsDe extends Translations {
   // ---------- Verlauf ----------
   final thisWeek = 'Diese Woche';
   final sessions = 'Sitzungen';
-  final pickedUp = 'Hochgenommen';
+  final pickedUp = 'Handy aufgehoben';
   final paused = 'Pausiert';
   String loadSessionsFailed(Object error) => 'Sitzungen konnten nicht geladen werden: $error';
   final noSessions = 'Noch keine Sitzungen. Beendete Timer erscheinen hier.';
   String deleteSessionMessage(String duration, String mode) => '$duration ($mode) wird aus deinem Verlauf entfernt. Das kann nicht rückgängig gemacht werden.';
   String deletingFailed(Object error) => 'Löschen fehlgeschlagen: $error';
   final deleteSession = 'Sitzung löschen';
-  final notPickedUp = 'Nicht hochgenommen';
-  String pickedUpTimes(int count, String time) => '$count× hochgenommen, $time';
+  final notPickedUp = 'Nicht aufgehoben';
+  String pickedUpTimes(int count, String time) => '$count× aufgehoben, $time';
   final today = 'Heute';
   final yesterday = 'Gestern';
   final weekdays = const [
@@ -429,6 +437,10 @@ class TranslationsEn extends Translations {
   final timerTitle = 'Timer';
   final pomodoro = 'Pomodoro';
   final stopwatch = 'Stopwatch';
+  final flowtime = 'Flowtime';
+  final tapForBreak = 'Tap to take your break';
+  final flowtimeHint = 'Study for as long as you can focus. Your break depends on how long you studied: up to 25 min → 5 min, up to 50 min → 8 min, longer → 10 min.';
+  String flowtimeEarned(int minutes) => 'Break: $minutes min';
   final breakLabel = 'Break';
   final breakLength = 'Break length';
   final breakNone = 'None';

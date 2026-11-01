@@ -1,4 +1,4 @@
-// stopwatch und pomodoro
+// stopwatch, pomodoro und flowtime
 // nicht zu study_log geschrieben, TODO dafür ist ein kurs, sheet und excercise nötig, evtl. neu als feature
 // stattdessen in focus_period geschrieben
 // wenn sensoren bewegung aufnehmen, 10s countdown, bis pausiert wird
@@ -19,6 +19,7 @@ import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/features/timer/models/timer_mode.dart';
 import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
 import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
+import 'package:paola_mobile/features/timer/util/flowtime.dart';
 import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
 import 'package:paola_mobile/features/timer/util/timer_live_activity.dart';
 
@@ -41,6 +42,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   int _breakMinutes = 5;
   bool _onBreak = false;
 
+  /// Length of the current flowtime break, set from the study block before it.
+  int _flowBreakMinutes = 0;
+
   // Elapsed time = time banked from earlier runs + time since _runStart.
   Duration _banked = Duration.zero;
   DateTime? _runStart;
@@ -55,8 +59,20 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   bool get _running => _runStart != null;
   bool get _configuring => !_running && _banked == Duration.zero;
   Duration get _phaseTotal => _onBreak
-      ? Duration(minutes: _breakMinutes)
+      ? Duration(minutes: _currentBreakMinutes)
       : Duration(seconds: _workSeconds);
+
+  int get _currentBreakMinutes =>
+      _mode == TimerMode.flowtime ? _flowBreakMinutes : _breakMinutes;
+
+  /// In flowtime the dial ends the study block instead of pausing it, since
+  /// stopping when focus runs out is what earns the break.
+  bool get _flowStudying =>
+      _mode == TimerMode.flowtime && _running && !_onBreak;
+
+  /// Pomodoro work and every break count down; stopwatch and flowtime work
+  /// count up.
+  bool get _countingDown => _mode == TimerMode.pomodoro || _onBreak;
 
   Duration get _elapsed =>
       _running ? _banked + DateTime.now().difference(_runStart!) : _banked;
@@ -236,7 +252,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   }
 
   void _tick() {
-    if (_mode == TimerMode.pomodoro && _elapsed >= _phaseTotal) {
+    if (_countingDown && _elapsed >= _phaseTotal) {
       if (_onBreak) {
         _reset(keepAlerts: true);
         _notify(context.t.breakOver, context.t.nextRound);
@@ -265,7 +281,36 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     setState(() {});
   }
 
-  /// Asks what was done in the finished pomodoro (the break already runs
+  /// Holds the flowtime study block and asks for the reflection. "Keep
+  /// studying" carries on with the same block; otherwise it is saved and the
+  /// break it earned starts.
+  Future<void> _takeBreak() async {
+    _pause();
+    final studied = _elapsed;
+    final result = await showReflection(context, studied: studied);
+    if (!mounted || _onBreak || _running || _configuring) return;
+    if (result.action == ReflectionAction.keepStudying) {
+      _start();
+      return;
+    }
+    final session = _takeSession();
+    _banked = Duration.zero;
+    _flowBreakMinutes = flowtimeBreakMinutes(studied);
+    _onBreak = true;
+    _start();
+    if (session == null) return;
+    switch (result.action) {
+      case ReflectionAction.save:
+        _upload(session.withReflection(result.reflection));
+      case ReflectionAction.skip:
+        _upload(session);
+      case ReflectionAction.discard:
+      case ReflectionAction.keepStudying:
+        break;
+    }
+  }
+
+  /// Asks what was done in the finished pomodoro or flowtime block (the break already runs
   /// behind the dialog), then saves [session] accordingly.
   Future<void> _reflect(FocusSession session) async {
     final result = await showReflection(context, studied: session.duration);
@@ -287,23 +332,25 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   /// Mirrors the current state in the lock screen notification.
   void _syncNotification() {
     final t = context.t;
-    final pomodoro = _mode == TimerMode.pomodoro;
-    final title = !pomodoro
-        ? t.stopwatch
-        : _onBreak
+    final countdown = _countingDown;
+    final title = _onBreak
         ? t.breakLabel
-        : '${t.pomodoro} · $_workLabel';
+        : switch (_mode) {
+            TimerMode.stopwatch => t.stopwatch,
+            TimerMode.flowtime => t.flowtime,
+            TimerMode.pomodoro => '${t.pomodoro} · $_workLabel',
+          };
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
     final Future<void> shown;
     if (!_running) {
-      if (pomodoro) TimerNotification.cancelEnd(phase);
-      final left = pomodoro ? _phaseTotal - elapsed : elapsed;
+      if (countdown) TimerNotification.cancelEnd(phase);
+      final left = countdown ? _phaseTotal - elapsed : elapsed;
       shown = TimerNotification.paused(
         title,
         _format(left).replaceAll(' ', ''),
       );
-    } else if (pomodoro) {
+    } else if (countdown) {
       final end = DateTime.now().add(_phaseTotal - elapsed);
       shown = TimerNotification.countdown(title, end);
       final (alertTitle, alertBody) = _onBreak
@@ -399,12 +446,16 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
               const SizedBox(height: 24),
               _Dial(
                 progress: configuring ? 0 : _progress(),
-                hint: _running
+                hint: _flowStudying
+                    ? context.t.tapForBreak
+                    : _running
                     ? context.t.tapToPause
                     : configuring
                     ? context.t.tapToStart
                     : context.t.tapToResume,
-                onTap: _running
+                onTap: _flowStudying
+                    ? _takeBreak
+                    : _running
                     ? _pause
                     : pomodoro && configuring && _workSeconds == 0
                     ? null
@@ -448,7 +499,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   double _progress() {
     final elapsed = _elapsed;
-    if (_mode == TimerMode.stopwatch) {
+    if (!_countingDown) {
       // The ring fills once per minute.
       return (elapsed.inMilliseconds % 60000) / 60000;
     }
@@ -458,13 +509,18 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   Widget _runningDisplay() {
     final elapsed = _elapsed;
-    if (_mode == TimerMode.stopwatch) {
-      return _DialTime(_format(elapsed), label: context.t.stopwatch);
+    if (!_countingDown) {
+      return _DialTime(
+        _format(elapsed),
+        label: _mode == TimerMode.flowtime
+            ? context.t.flowtimeEarned(flowtimeBreakMinutes(elapsed))
+            : context.t.stopwatch,
+      );
     }
     return _DialTime(
       _format(_phaseTotal - elapsed),
       label: _onBreak
-          ? context.t.breakWithLength(_breakLabel(_breakMinutes))
+          ? context.t.breakWithLength(_breakLabel(_currentBreakMinutes))
           : context.t.ofWork(_workText),
     );
   }
@@ -557,13 +613,21 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       ),
       const SizedBox(height: 24),
     ],
-    SizedBox(
-      width: double.infinity,
-      child: PaolaButton(
-        label: context.t.start,
-        onPressed: pomodoro && _workSeconds == 0 ? null : _start,
+    if (_mode == TimerMode.flowtime) ...[
+      Text(
+        context.t.flowtimeHint,
+        style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
       ),
-    ),
+    ],
+    // Flowtime is driven by the dial alone.
+    if (_mode != TimerMode.flowtime)
+      SizedBox(
+        width: double.infinity,
+        child: PaolaButton(
+          label: context.t.start,
+          onPressed: pomodoro && _workSeconds == 0 ? null : _start,
+        ),
+      ),
   ];
 
   List<Widget> _runControls() => [
@@ -681,7 +745,7 @@ class _Dot extends StatelessWidget {
   );
 }
 
-/// Pomodoro / Stopwatch switch. The selected mode is dark while the timer
+/// Pomodoro / Flowtime / Stopwatch switch. The selected mode is dark while the timer
 /// can be set up and grey while it runs.
 class _ModeToggle extends StatelessWidget {
   final TimerMode mode;
@@ -706,7 +770,11 @@ class _ModeToggle extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
-          for (final m in const [TimerMode.pomodoro, TimerMode.stopwatch])
+          for (final m in const [
+            TimerMode.pomodoro,
+            TimerMode.flowtime,
+            TimerMode.stopwatch,
+          ])
             Expanded(
               child: GestureDetector(
                 onTap: () => onChanged(m),
@@ -719,9 +787,11 @@ class _ModeToggle extends StatelessWidget {
                       ? context.colors.textPrimary
                       : context.colors.track,
                   child: Text(
-                    m == TimerMode.pomodoro
-                        ? context.t.pomodoro
-                        : context.t.stopwatch,
+                    switch (m) {
+                      TimerMode.pomodoro => context.t.pomodoro,
+                      TimerMode.flowtime => context.t.flowtime,
+                      TimerMode.stopwatch => context.t.stopwatch,
+                    },
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: m == mode ? FontWeight.w500 : FontWeight.w400,
