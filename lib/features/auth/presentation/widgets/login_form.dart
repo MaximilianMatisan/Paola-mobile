@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
-import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/style/container.dart';
 import 'package:paola_mobile/features/auth/data/auth_repository.dart';
 
@@ -43,7 +42,9 @@ class _LoginFormState extends State<LoginForm> {
           Spacer(),
 
           Container(
-            decoration: defaultBoxDecoration(Theme.of(context).colorScheme.surfaceContainer),
+            decoration: defaultBoxDecoration(
+              Theme.of(context).colorScheme.surfaceContainer,
+            ),
             padding: const EdgeInsetsGeometry.all(25),
 
             child: Column(
@@ -120,10 +121,8 @@ class _LoginFormState extends State<LoginForm> {
                           password: _passwordController.text,
                         );
                         if (!context.mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => MainEnvironment()),
-                        );
+                        // Back to the settings, which opened the login.
+                        Navigator.pop(context, true);
                       } catch (e) {
                         if (!context.mounted) return;
                         setState(() {

@@ -167,24 +167,25 @@ abstract class Translations {
 
   // ---------- Settings - features/settings/presentation ----------
   String get settingsTitle;
-  String settingsLoadFailed(String error);
   String get profile;
   String get loggedIn;
+  String get savedOnDevice;
+  String get webApp;
+  String get webAppNotConnected;
+  String webAppConnected(String server);
+  String get setUp;
+  String get disconnect;
   String get nickname;
   String get nicknameSaved;
-  String nicknameSaveFailed(String error);
   String get appearance;
   String get darkMode;
   String get darkModeDesc;
-  String darkModeSaveFailed(String error);
   String get language;
   String get languageDesc;
-  String languageSaveFailed(String error);
   String get notifications;
   String get timerNotifications;
   String get timerNotificationsOn;
   String get timerNotificationsOff;
-  String get dataPrivacy;
   String get deleteMyData;
   String get deleteMyDataDesc;
   String get request;
@@ -371,29 +372,27 @@ class TranslationsDe extends Translations {
 
   // ---------- Einstellungen ----------
   final settingsTitle = 'Einstellungen';
-  String settingsLoadFailed(String error) =>
-      'Einstellungen konnten nicht geladen werden: $error';
   final profile = 'Profil';
   final loggedIn = 'Angemeldet';
+  final savedOnDevice = 'Auf diesem Gerät gespeichert';
+  final webApp = 'Web-App';
+  final webAppNotConnected =
+      'Nicht eingerichtet. Deine Daten bleiben auf diesem Gerät.';
+  String webAppConnected(String server) => 'Verbunden mit $server';
+  final setUp = 'Einrichten';
+  final disconnect = 'Trennen';
   final nickname = 'Spitzname';
   final nicknameSaved = 'Spitzname gespeichert';
-  String nicknameSaveFailed(String error) =>
-      'Spitzname konnte nicht gespeichert werden: $error';
   final appearance = 'Darstellung';
   final darkMode = 'Dark Mode';
   final darkModeDesc = 'Dunkles Farbschema verwenden';
-  String darkModeSaveFailed(String error) =>
-      'Dark Mode konnte nicht gespeichert werden: $error';
   final language = 'Sprache';
   final languageDesc = 'Sprache der App';
-  String languageSaveFailed(String error) =>
-      'Sprache konnte nicht gespeichert werden: $error';
   final notifications = 'Benachrichtigungen';
   final timerNotifications = 'Timer-Benachrichtigungen';
   final timerNotificationsOn = 'An: Timer auf dem Sperrbildschirm und Hinweise';
   final timerNotificationsOff =
       'Aus: Timer auf dem Sperrbildschirm und Hinweise werden nicht angezeigt';
-  final dataPrivacy = 'Daten und Datenschutz';
   final deleteMyData = 'Meine Daten löschen';
   final deleteMyDataDesc = 'Alle erfassten Daten entfernen.';
   final request = 'Anfragen';
@@ -611,25 +610,26 @@ class TranslationsEn extends Translations {
 
   // ---------- Settings ----------
   final settingsTitle = 'Settings';
-  String settingsLoadFailed(String error) => 'Could not load settings: $error';
   final profile = 'Profile';
   final loggedIn = 'Logged in';
+  final savedOnDevice = 'Saved on this device';
+  final webApp = 'Web app';
+  final webAppNotConnected = 'Not set up. Your data stays on this device.';
+  String webAppConnected(String server) => 'Connected to $server';
+  final setUp = 'Set up';
+  final disconnect = 'Disconnect';
   final nickname = 'Nickname';
   final nicknameSaved = 'Nickname saved';
-  String nicknameSaveFailed(String error) => 'Could not save nickname: $error';
   final appearance = 'Appearance';
   final darkMode = 'Dark mode';
   final darkModeDesc = 'Use a dark color scheme';
-  String darkModeSaveFailed(String error) => 'Could not save dark mode: $error';
   final language = 'Language';
   final languageDesc = 'Language of the app';
-  String languageSaveFailed(String error) => 'Could not save language: $error';
   final notifications = 'Notifications';
   final timerNotifications = 'Timer notifications';
   final timerNotificationsOn = 'On: lock screen timer and end alerts';
   final timerNotificationsOff =
       "Off: the lock screen timer and end alerts won't show";
-  final dataPrivacy = 'Data and privacy';
   final deleteMyData = 'Delete my data';
   final deleteMyDataDesc = 'Remove all recorded data.';
   final request = 'Request';

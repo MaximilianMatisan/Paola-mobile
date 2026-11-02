@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
-import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 
 class WeekChart extends StatelessWidget {

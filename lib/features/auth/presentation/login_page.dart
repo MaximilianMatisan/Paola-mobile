@@ -11,13 +11,15 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   @override
   Widget build(BuildContext context) {
+    // Opened from the settings to connect the web app; pops with true once
+    // logged in.
     return Scaffold(
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsetsGeometry.all(15),
-        child: LoginForm()
+        child: LoginForm(),
       ),
     );
   }

@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/core/data/local_settings.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/theme.dart';
-import 'package:paola_mobile/features/auth/presentation/login_page.dart';
 import 'package:paola_mobile/core/util/notifications.dart';
 
 void main() async {
@@ -23,7 +24,9 @@ void main() async {
   final steps = <String, Future<void> Function()>{
     'Loading .env': () => dotenv.load(fileName: ".env"),
     'Loading language': AppLanguage.init,
-    'Restoring session': PaolaApi.instance.init,
+    'Opening database': LocalDatabase.instance.init,
+    'Loading settings': LocalSettings.init,
+    'Restoring web app connection': PaolaApi.instance.init,
     'Setting up notifications': initNotifications,
   };
   for (final MapEntry(key: step, value: run) in steps.entries) {
@@ -39,19 +42,6 @@ void main() async {
     }
   }
   runApp(const MyApp());
-  _loadPreferences();
-}
-
-/// Applies the saved dark mode and language preferences. Offline the app
-/// keeps the ones it has.
-Future<void> _loadPreferences() async {
-  if (!PaolaApi.instance.loggedIn) return;
-  try {
-    final prefs = await PaolaApi.instance.preferences();
-    final dark = prefs['dark_mode'] == 1 || prefs['dark_mode'] == true;
-    AppTheme.mode.value = dark ? ThemeMode.dark : ThemeMode.light;
-    await AppLanguage.set(Language.fromFlag(prefs['language']));
-  } catch (_) {}
 }
 
 class MyApp extends StatelessWidget {
@@ -72,9 +62,8 @@ class MyApp extends StatelessWidget {
         supportedLocales: [for (final l in Language.values) Locale(l.name)],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         builder: (context, child) => LanguageScope(child: child!),
-        home: PaolaApi.instance.loggedIn
-            ? const MainEnvironment()
-            : const LoginPage(),
+        // Works on the local data; the web app is set up in the settings.
+        home: const MainEnvironment(),
       ),
     );
   }

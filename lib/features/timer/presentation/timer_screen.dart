@@ -87,7 +87,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   Future<Duration> _loadYesterday() {
     final y = DateTime.now().subtract(const Duration(days: 1));
-    return PaolaApi.instance.studyTimeOn(y);
+    return LocalDatabase.instance.studyTimeOn(y);
   }
 
   @override
@@ -240,8 +240,28 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _upload(FocusSession session) {
-    PaolaApi.instance.saveSession(session).catchError((Object e) {
+  /// Puts the current study block aside until the session is finished.
+  void _keepBlock() {
+    final block = _takeSession();
+    if (block != null) _blocks.add(block);
+  }
+
+  /// All blocks of the session so far as one session; the breaks between
+  /// them are gaps, like pauses. Null if nothing was recorded.
+  FocusSession? _takeWholeSession() {
+    _keepBlock();
+    if (_blocks.isEmpty) return null;
+    final session = FocusSession(
+      start: _blocks.first.start,
+      pomodoro: _mode == TimerMode.pomodoro,
+      periods: [for (final b in _blocks) ...b.periods],
+    );
+    _blocks.clear();
+    return session;
+  }
+
+  void _save(FocusSession session) {
+    LocalDatabase.instance.saveSession(session).catchError((Object e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,

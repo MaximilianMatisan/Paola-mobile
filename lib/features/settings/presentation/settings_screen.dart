@@ -25,11 +25,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   final _api = PaolaApi.instance;
-  final _nickname = TextEditingController();
+  final _nickname = TextEditingController(text: LocalSettings.nickname.value);
 
-  AppUser? _user;
-  bool _darkMode = false;
-  bool _saving = false;
+  bool _darkMode = LocalSettings.darkMode;
   bool _requestingDeletion = false;
   NotificationStatus? _notifications;
 
@@ -37,7 +35,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _load();
     _loadNotificationStatus();
   }
 
@@ -65,22 +62,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (mounted) setState(() => _notifications = status);
   }
 
-  Future<void> _load() async {
-    try {
-      final (user, prefs) = await (_api.currentUser(), _api.preferences()).wait;
-      if (!mounted) return;
-      setState(() {
-        _user = user;
-        _nickname.text = user?.nickname ?? '';
-        _darkMode = prefs['dark_mode'] == 1 || prefs['dark_mode'] == true;
-      });
-      _applyDarkMode(_darkMode);
-      AppLanguage.set(Language.fromFlag(prefs['language']));
-    } catch (e) {
-      _showMessage((t) => t.settingsLoadFailed(_errorText(e)));
-    }
-  }
-
   String _errorText(Object e) =>
       e is ApiException ? e.message : context.t.noConnection;
 
@@ -93,49 +74,33 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _saveNickname() async {
-    final user = _user;
     final name = _nickname.text.trim();
-    if (user == null || name.isEmpty || _saving) return;
+    if (name.isEmpty) return;
     FocusScope.of(context).unfocus();
-    setState(() => _saving = true);
-    try {
-      await _api.updateNickname(user.id, name);
-      if (!mounted) return;
-      setState(() => _user = AppUser(id: user.id, nickname: name));
-      _showMessage((t) => t.nicknameSaved);
-    } catch (e) {
-      _showMessage((t) => t.nicknameSaveFailed(_errorText(e)));
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    await LocalSettings.setNickname(name);
+    if (mounted) setState(() {});
+    _showMessage((t) => t.nicknameSaved);
   }
-
-  static void _applyDarkMode(bool enabled) =>
-      AppTheme.mode.value = enabled ? ThemeMode.dark : ThemeMode.light;
 
   Future<void> _setDarkMode(bool enabled) async {
     setState(() => _darkMode = enabled);
-    _applyDarkMode(enabled);
-    try {
-      await _api.setDarkMode(enabled);
-    } catch (e) {
-      if (mounted) setState(() => _darkMode = !enabled);
-      _applyDarkMode(!enabled);
-      _showMessage((t) => t.darkModeSaveFailed(_errorText(e)));
-    }
+    await LocalSettings.setDarkMode(enabled);
   }
 
-  /// Switches right away and reverts if the server can't store it.
-  Future<void> _setLanguage(Language language) async {
-    final previous = AppLanguage.current.value;
-    if (language == previous) return;
-    await AppLanguage.set(language);
-    try {
-      await _api.setLanguage(language);
-    } catch (e) {
-      await AppLanguage.set(previous);
-      _showMessage((t) => t.languageSaveFailed(_errorText(e)));
-    }
+  Future<void> _setLanguage(Language language) => AppLanguage.set(language);
+
+  /// Opens the login for the web app.
+  Future<void> _connectWebApp() async {
+    await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const LoginPage()));
+    if (mounted) setState(() {});
+  }
+
+  /// Forgets the web app session; the data on the device stays.
+  Future<void> _disconnectWebApp() async {
+    await _api.logout();
+    if (mounted) setState(() {});
   }
 
   Future<void> _requestDeletion() async {
@@ -295,38 +260,47 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ],
               ),
             _Group(
-              label: t.dataPrivacy,
+              label: t.webApp,
               children: [
                 Row(
                   children: [
                     Expanded(
                       child: _RowText(
-                        title: t.deleteMyData,
-                        subtitle: t.deleteMyDataDesc,
+                        title: t.webApp,
+                        subtitle: connected
+                            ? t.webAppConnected(_api.serverUrl)
+                            : t.webAppNotConnected,
                       ),
                     ),
                     const SizedBox(width: 12),
                     PaolaButton(
-                      label: _requestingDeletion ? t.requesting : t.request,
-                      style: PaolaButtonStyle.danger,
-                      onPressed: _requestingDeletion ? null : _requestDeletion,
+                      label: connected ? t.disconnect : t.setUp,
+                      style: PaolaButtonStyle.secondary,
+                      onPressed: connected ? _disconnectWebApp : _connectWebApp,
                     ),
                   ],
                 ),
+                // Deletion is done by the researchers on the web app.
+                if (connected)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _RowText(
+                          title: t.deleteMyData,
+                          subtitle: t.deleteMyDataDesc,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      PaolaButton(
+                        label: _requestingDeletion ? t.requesting : t.request,
+                        style: PaolaButtonStyle.danger,
+                        onPressed: _requestingDeletion
+                            ? null
+                            : _requestDeletion,
+                      ),
+                    ],
+                  ),
               ],
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _logout,
-                icon: const Icon(Icons.logout, size: 18),
-                label: Text(t.logOut, style: const TextStyle(fontSize: 16)),
-                style: TextButton.styleFrom(
-                  foregroundColor: context.colors.textPrimary,
-                  padding: EdgeInsets.zero,
-                ),
-              ),
             ),
           ],
         ),

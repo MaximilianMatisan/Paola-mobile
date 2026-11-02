@@ -1,5 +1,9 @@
 // Connection to the Paola web app (Next.js API routes).
 //
+// The app keeps its data on the device (core/data). The web app is optional:
+// the user connects it in the settings, and this class is what the sync
+// talks to.
+//
 // paola web authenticates via cookie "paola_session" (JWT),
 // issued by POST /api/auth/login
 // store that cookie after login and send as a header on every api request
@@ -26,14 +30,13 @@
 
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_client.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
-import 'package:paola_mobile/features/timer/models/study_activity.dart';
+import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppUser {
@@ -45,75 +48,6 @@ class AppUser {
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
     id: json['id'] as int,
     nickname: (json['nickname'] ?? '') as String,
-  );
-}
-
-/// Part of a timer session in which the phone layed still or was picked up
-class FocusPeriod {
-  final DateTime start;
-  final DateTime end;
-  final bool pickedUp;
-
-  FocusPeriod({required this.start, required this.end, required this.pickedUp});
-
-  Duration get duration => end.difference(start);
-
-  factory FocusPeriod.fromJson(Map<String, dynamic> json) => FocusPeriod(
-    start: DateTime.fromMillisecondsSinceEpoch((json['start'] as num).toInt()),
-    end: DateTime.fromMillisecondsSinceEpoch((json['end'] as num).toInt()),
-    pickedUp: json['picked_up'] == true,
-  );
-
-  Map<String, dynamic> toJson() => {
-    'start': start.millisecondsSinceEpoch,
-    'end': end.millisecondsSinceEpoch,
-    'picked_up': pickedUp,
-  };
-}
-
-/// A recorded timer session. Gaps between the periods are pauses.
-class FocusSession {
-  final DateTime start;
-  final bool pomodoro;
-  final List<FocusPeriod> periods;
-
-  /// What was done in the session; null if the user gave no reflection.
-  final List<ActivityReflection>? reflection;
-
-  FocusSession({
-    required this.start,
-    required this.pomodoro,
-    required this.periods,
-    this.reflection,
-  });
-
-  FocusSession withReflection(List<ActivityReflection>? reflection) =>
-      FocusSession(
-        start: start,
-        pomodoro: pomodoro,
-        periods: periods,
-        reflection: reflection,
-      );
-
-  Duration get duration =>
-      periods.fold(Duration.zero, (sum, p) => sum + p.duration);
-
-  factory FocusSession.fromJson(Map<String, dynamic> json) => FocusSession(
-    start: DateTime.fromMillisecondsSinceEpoch(
-      (json['session_start'] as num).toInt(),
-    ),
-    pomodoro: json['is_pomodoro'] == true,
-    periods: [
-      for (final p in json['periods'] as List)
-        FocusPeriod.fromJson(p as Map<String, dynamic>),
-    ],
-    reflection: switch (json['reflection']) {
-      final List list => [
-        for (final r in list)
-          ?ActivityReflection.fromJson(r as Map<String, dynamic>),
-      ],
-      _ => null,
-    },
   );
 }
 
@@ -323,19 +257,9 @@ class PaolaApi {
     }
   }
 
-  /// Bumped whenever a session was saved, so the history can reload.
-  final sessionsChanged = ValueNotifier(0);
-
   /// see /api/focus_period/create of paola web app
   Future<void> saveSession(FocusSession session) async {
-    await _post('/api/focus_period/create', {
-      'session_start': session.start.millisecondsSinceEpoch,
-      'is_pomodoro': session.pomodoro,
-      'periods': [for (final p in session.periods) p.toJson()],
-      if (session.reflection case final reflection?)
-        'reflection': [for (final r in reflection) r.toJson()],
-    });
-    sessionsChanged.value++;
+    await _post('/api/focus_period/create', session.toJson());
   }
 
   /// Recorded sessions, newest first. see /api/focus_period/byOwner

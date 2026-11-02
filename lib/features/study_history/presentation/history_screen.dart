@@ -28,19 +28,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    PaolaApi.instance.sessionsChanged.addListener(_load);
+    LocalDatabase.instance.sessionsChanged.addListener(_load);
     _load();
   }
 
   @override
   void dispose() {
-    PaolaApi.instance.sessionsChanged.removeListener(_load);
+    LocalDatabase.instance.sessionsChanged.removeListener(_load);
     super.dispose();
   }
 
   Future<void> _load() async {
     try {
-      final sessions = await PaolaApi.instance.sessions();
+      final sessions = await LocalDatabase.instance.sessions();
       if (mounted) {
         setState(() {
           _sessions = sessions;
@@ -96,7 +96,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
     if (!confirmed || !mounted) return;
     try {
-      await PaolaApi.instance.deleteSession(s);
+      await LocalDatabase.instance.deleteSession(s);
       if (mounted) setState(() => _sessions.remove(s));
     } catch (e) {
       if (!mounted) return;
