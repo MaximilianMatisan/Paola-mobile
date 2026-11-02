@@ -9,13 +9,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
+import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:flutter/services.dart';
 
-import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:paola_mobile/features/timer/services/movement_sensor.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/timer/models/timer_mode.dart';
 import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
 import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
@@ -54,10 +57,15 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   final _liveActivity = TimerLiveActivity();
   DateTime? _sessionStart;
 
+  /// Study blocks finished before a break. They are saved together with the
+  /// current block, as one session, when the user finishes.
+  final _blocks = <FocusSession>[];
+
   late Future<Duration> _yesterday = _loadYesterday();
 
   bool get _running => _runStart != null;
-  bool get _configuring => !_running && _banked == Duration.zero;
+  bool get _configuring =>
+      !_running && _banked == Duration.zero && _blocks.isEmpty && !_onBreak;
   Duration get _phaseTotal => _onBreak
       ? Duration(minutes: _currentBreakMinutes)
       : Duration(seconds: _workSeconds);
@@ -191,6 +199,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _sensor.stop();
     _sensor.takePeriods();
     _sessionStart = null;
+    _blocks.clear();
     _runStart = null;
     _banked = Duration.zero;
     _onBreak = false;
@@ -217,13 +226,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     ).showSnackBar(SnackBar(content: Text(context.t.pausedPickedUp)));
   }
 
-  /// Saves the work session recorded so far with its movement timeline.
-  void _saveSession() {
-    final session = _takeSession();
-    if (session != null) _upload(session);
-  }
-
-  /// Stops recording and hands out the work session so far, if there is one.
+  /// Stops recording and hands out the current study block, if there is one.
   FocusSession? _takeSession() {
     _sensor.stop();
     final periods = _sensor.takePeriods();
@@ -246,87 +249,95 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     });
   }
 
+  /// Saves the session without asking (stopped on the lock screen).
   void _finish() {
-    _saveSession();
+    final session = _takeWholeSession();
+    if (session != null) _save(session);
     _reset();
+  }
+
+  /// "Finish and save": holds the timer and asks for the reflection.
+  /// "Keep studying" carries on where the session was.
+  Future<void> _finishWithReflection() async {
+    final wasRunning = _running;
+    if (wasRunning) _pause();
+    final session = _takeWholeSession();
+    if (session == null) {
+      _reset();
+      return;
+    }
+    final result = await showReflection(context, studied: session.duration);
+    if (!mounted) return;
+    switch (result.action) {
+      case ReflectionAction.keepStudying:
+        _blocks.add(session);
+        if (wasRunning) _start();
+        setState(() {});
+        return;
+      case ReflectionAction.save:
+        _save(session.withReflection(result.reflection));
+      case ReflectionAction.skip:
+        _save(session);
+      case ReflectionAction.discard:
+        break;
+    }
+    _reset();
+  }
+
+  /// Between two blocks: nothing runs and tapping the dial starts the next
+  /// block. The end alert that just fired stays.
+  void _idle() {
+    _ticker?.cancel();
+    _sensor.stop();
+    _runStart = null;
+    _banked = Duration.zero;
+    _onBreak = false;
+    TimerNotification.cancel();
+    _liveActivity.end();
+    setState(() {});
   }
 
   void _tick() {
     if (_countingDown && _elapsed >= _phaseTotal) {
       if (_onBreak) {
-        _reset(keepAlerts: true);
+        _idle();
         _notify(context.t.breakOver, context.t.nextRound);
         return;
       }
-      final session = _takeSession();
+      _keepBlock();
+      _banked = Duration.zero;
       if (_breakMinutes > 0) {
-        _banked = Duration.zero;
         _onBreak = true;
         _start();
       } else {
-        _reset(keepAlerts: true);
+        _idle();
       }
-      if (session != null) {
-        _reflect(session);
-      } else {
-        _notify(
-          context.t.pomodoroFinished,
-          _breakMinutes > 0
-              ? context.t.breakTime(_breakMinutes)
-              : context.t.wellDone,
-        );
-      }
+      _notify(
+        context.t.pomodoroFinished,
+        _breakMinutes > 0
+            ? context.t.breakTime(_breakMinutes)
+            : context.t.wellDone,
+      );
       return;
     }
     setState(() {});
   }
 
-  /// Holds the flowtime study block and asks for the reflection. "Keep
-  /// studying" carries on with the same block; otherwise it is saved and the
-  /// break it earned starts.
-  Future<void> _takeBreak() async {
-    _pause();
-    final studied = _elapsed;
-    final result = await showReflection(context, studied: studied);
-    if (!mounted || _onBreak || _running || _configuring) return;
-    if (result.action == ReflectionAction.keepStudying) {
-      _start();
-      return;
-    }
-    final session = _takeSession();
+  /// Ends the flowtime study block and starts the break it earned.
+  void _takeBreak() {
+    _flowBreakMinutes = flowtimeBreakMinutes(_elapsed);
+    _keepBlock();
     _banked = Duration.zero;
-    _flowBreakMinutes = flowtimeBreakMinutes(studied);
     _onBreak = true;
     _start();
-    if (session == null) return;
-    switch (result.action) {
-      case ReflectionAction.save:
-        _upload(session.withReflection(result.reflection));
-      case ReflectionAction.skip:
-        _upload(session);
-      case ReflectionAction.discard:
-      case ReflectionAction.keepStudying:
-        break;
-    }
   }
 
-  /// Asks what was done in the finished pomodoro or flowtime block (the break already runs
-  /// behind the dialog), then saves [session] accordingly.
-  Future<void> _reflect(FocusSession session) async {
-    final result = await showReflection(context, studied: session.duration);
-    switch (result.action) {
-      case ReflectionAction.discard:
-        return;
-      case ReflectionAction.save:
-        _upload(session.withReflection(result.reflection));
-      case ReflectionAction.skip:
-        _upload(session);
-      case ReflectionAction.keepStudying:
-        _upload(session);
-        if (!mounted) return;
-        _reset();
-        _start();
-    }
+  /// Ends the break early and starts the next study block.
+  void _skipBreak() {
+    TimerNotification.cancelEnd(TimerPhase.breakTime);
+    _onBreak = false;
+    _banked = Duration.zero;
+    _start();
   }
 
   /// Mirrors the current state in the lock screen notification.
@@ -411,7 +422,8 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   }
 
   void _setMode(TimerMode mode) {
-    if (mode == _mode) return;
+    // The mode is fixed while a session runs (the toggle is greyed out).
+    if (mode == _mode || !_configuring) return;
     _reset();
     setState(() => _mode = mode);
   }
@@ -426,6 +438,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
     return Scaffold(
       backgroundColor: context.colors.background,
+      floatingActionButton: PageHelpButton(help: _help(context.t)),
       body: SafeArea(
         child: RefreshIndicator(
           color: context.colors.primary,
@@ -434,7 +447,12 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
             await _yesterday.catchError((_) => Duration.zero);
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+            padding: const EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              PageHelpButton.bottomSpace,
+            ),
             children: [
               ScreenTitle(context.t.timerTitle),
               const SizedBox(height: 24),

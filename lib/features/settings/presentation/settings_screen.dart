@@ -1,16 +1,18 @@
 // Settings: change nickname, toggle dark mode, choose the language, check
-// timer notifications,
+// timer notifications and set up the (optional) web app connection.
+// Everything except the web app part is stored on the device.
 
 import 'package:flutter/material.dart';
 
+import 'package:paola_mobile/core/data/local_settings.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
-import 'package:paola_mobile/core/style/theme.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/auth/presentation/login_page.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -155,25 +157,30 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
-  Future<void> _logout() async {
-    await _api.logout();
-    if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final name = _user?.nickname ?? '';
+    final name = LocalSettings.nickname.value;
+    final connected = _api.loggedIn;
     final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
 
     return Scaffold(
       backgroundColor: context.colors.background,
+      floatingActionButton: PageHelpButton(
+        help: PageHelpContent(
+          title: t.helpSettingsTitle,
+          intro: t.helpSettingsIntro,
+          bullets: t.helpSettingsBullets,
+        ),
+      ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+          padding: const EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            PageHelpButton.bottomSpace,
+          ),
           children: [
             ScreenTitle(t.settingsTitle),
             _Group(
@@ -203,8 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _RowText(
-                        title: name.isEmpty ? '…' : name,
-                        subtitle: t.loggedIn,
+                        title: name.isEmpty ? t.nickname : name,
+                        subtitle: t.savedOnDevice,
                         bold: true,
                       ),
                     ),
@@ -221,11 +228,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     ),
                     const SizedBox(width: 8),
                     PaolaButton(
-                      label: _saving ? t.saving : t.save,
+                      label: t.save,
                       style: PaolaButtonStyle.secondary,
-                      onPressed: _user == null || _saving
-                          ? null
-                          : _saveNickname,
+                      onPressed: _saveNickname,
                     ),
                   ],
                 ),

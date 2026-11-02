@@ -1,11 +1,13 @@
-// History of the timer sessions recorded by this app (focus_period table in db),
+// History of the timer sessions recorded by this app (local database),
 
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 
-import 'package:paola_mobile/core/network/paola_api.dart';
+import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/study_history/presentation/widgets/week_chart.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -119,12 +121,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return Scaffold(
       backgroundColor: context.colors.background,
+      floatingActionButton: PageHelpButton(
+        help: PageHelpContent(
+          title: context.t.helpHistoryTitle,
+          intro: context.t.helpHistoryIntro,
+          bullets: context.t.helpHistoryBullets,
+        ),
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           color: context.colors.primary,
           onRefresh: _load,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+            padding: const EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              PageHelpButton.bottomSpace,
+            ),
             children: [
               ScreenTitle(context.t.history, onBack: widget.onBack),
               const SizedBox(height: 20),

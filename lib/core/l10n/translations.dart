@@ -33,7 +33,6 @@ abstract class Translations {
 
   // ---------- General ----------
   String get save;
-  String get saving;
   String get cancel;
   String get delete;
   String get ok;
@@ -194,6 +193,25 @@ abstract class Translations {
   String get deleteDataMessage;
   String get deletionRequested;
   String deletionRequestFailed(String error);
+
+  // ---------- Page help - core/widgets/page_help.dart ----------
+  String get helpButtonTooltip;
+  String get helpClose;
+  String get helpPomodoroTitle;
+  String get helpPomodoroIntro;
+  List<String> get helpPomodoroBullets;
+  String get helpStopwatchTitle;
+  String get helpStopwatchIntro;
+  List<String> get helpStopwatchBullets;
+  String get helpFlowtimeTitle;
+  String get helpFlowtimeIntro;
+  List<String> get helpFlowtimeBullets;
+  String get helpHistoryTitle;
+  String get helpHistoryIntro;
+  List<String> get helpHistoryBullets;
+  String get helpSettingsTitle;
+  String get helpSettingsIntro;
+  List<String> get helpSettingsBullets;
 }
 
 class TranslationsDe extends Translations {
