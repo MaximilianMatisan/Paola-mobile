@@ -1,4 +1,4 @@
-// Reflection after a pomodoro, same content as the web app's dialog but split
+// Reflection when a timer session is finished, same content as the web app's dialog but split
 // into steps: 1. which activities, 2. how each went, 3. how the time splits
 // between them (skipped with a single activity, it gets all the time).
 
@@ -16,8 +16,7 @@ enum ReflectionAction {
   /// Closed without answering; the session is still saved.
   skip,
 
-  /// Pomodoro: like [skip], and the next pomodoro starts right away.
-  /// Flowtime: the break is skipped and the same study block goes on.
+  /// Nothing is saved; the popup closes and the session goes on.
   keepStudying,
 
   /// The session is thrown away.
@@ -53,9 +52,6 @@ String _durationText(int seconds) {
   if (m > 0) return s == 0 ? '$m min' : '$m min $s s';
   return '$s s';
 }
-
-/// Marks the self-study activities (orange dot in the web app).
-const _markColor = Color(0xFFF26B21);
 
 class _ReflectionDialog extends StatefulWidget {
   final int total;
@@ -174,17 +170,13 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
               ),
             ),
             const Hairline(),
+            // Two equal buttons side by side, so neither label is cut off;
+            // discarding sits underneath.
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 12, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Row(
                 children: [
-                  PaolaButton(
-                    label: t.reflectionDiscard,
-                    style: PaolaButtonStyle.danger,
-                    onPressed: _discard,
-                  ),
-                  const Spacer(),
-                  Flexible(
+                  Expanded(
                     child: PaolaButton(
                       label: t.reflectionContinue,
                       style: PaolaButtonStyle.secondary,
@@ -192,7 +184,7 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Flexible(
+                  Expanded(
                     child: PaolaButton(
                       label: _lastStep ? t.reflectionSave : t.reflectionNext,
                       onPressed: _selected.isEmpty
@@ -203,6 +195,14 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: PaolaButton(
+                label: t.reflectionDiscard,
+                style: PaolaButtonStyle.danger,
+                onPressed: _discard,
               ),
             ),
           ],
@@ -267,7 +267,6 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
           for (final a in StudyActivity.values)
             _ActivityChip(
               label: a.label(context.t),
-              marked: a.marked,
               selected: _selected.contains(a),
               onTap: () => _toggle(a),
             ),
@@ -435,13 +434,11 @@ class _Secondary extends StatelessWidget {
 /// Pill with the activity name; green outline when selected.
 class _ActivityChip extends StatelessWidget {
   final String label;
-  final bool marked;
   final bool selected;
   final VoidCallback onTap;
 
   const _ActivityChip({
     required this.label,
-    required this.marked,
     required this.selected,
     required this.onTap,
   });
@@ -462,23 +459,8 @@ class _ActivityChip extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          child: Text.rich(
-            TextSpan(
-              text: label,
-              children: [
-                if (marked)
-                  const WidgetSpan(
-                    alignment: PlaceholderAlignment.middle,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 6),
-                      child: CircleAvatar(
-                        radius: 3,
-                        backgroundColor: _markColor,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+          child: Text(
+            label,
             style: TextStyle(
               fontSize: 14,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,

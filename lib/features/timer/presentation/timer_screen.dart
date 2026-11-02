@@ -497,6 +497,25 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// Help text for the selected timer mode.
+  PageHelpContent _help(Translations t) => switch (_mode) {
+    TimerMode.pomodoro => PageHelpContent(
+      title: t.helpPomodoroTitle,
+      intro: t.helpPomodoroIntro,
+      bullets: t.helpPomodoroBullets,
+    ),
+    TimerMode.stopwatch => PageHelpContent(
+      title: t.helpStopwatchTitle,
+      intro: t.helpStopwatchIntro,
+      bullets: t.helpStopwatchBullets,
+    ),
+    TimerMode.flowtime => PageHelpContent(
+      title: t.helpFlowtimeTitle,
+      intro: t.helpFlowtimeIntro,
+      bullets: t.helpFlowtimeBullets,
+    ),
+  };
+
   double _progress() {
     final elapsed = _elapsed;
     if (!_countingDown) {
@@ -614,30 +633,37 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       const SizedBox(height: 24),
     ],
     if (_mode == TimerMode.flowtime) ...[
-      Text(
-        context.t.flowtimeHint,
-        style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
-      ),
+      // Text(
+      //   context.t.flowtimeHint,
+      //   style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
+      // ),
     ],
-    // Flowtime is driven by the dial alone.
-    if (_mode != TimerMode.flowtime)
-      SizedBox(
-        width: double.infinity,
-        child: PaolaButton(
-          label: context.t.start,
-          onPressed: pomodoro && _workSeconds == 0 ? null : _start,
-        ),
+    SizedBox(
+      width: double.infinity,
+      child: PaolaButton(
+        label: context.t.start,
+        onPressed: pomodoro && _workSeconds == 0 ? null : _start,
       ),
+    ),
   ];
 
   List<Widget> _runControls() => [
     // Pausing and resuming is done by tapping the dial.
-    if (!_onBreak) ...[
+    SizedBox(
+      width: double.infinity,
+      child: PaolaButton(
+        label: context.t.finishAndSave,
+        onPressed: _finishWithReflection,
+      ),
+    ),
+    const SizedBox(height: 8),
+    if (_onBreak) ...[
       SizedBox(
         width: double.infinity,
         child: PaolaButton(
-          label: context.t.finishAndSave,
-          onPressed: _finish,
+          label: context.t.skipBreak,
+          style: PaolaButtonStyle.secondary,
+          onPressed: _skipBreak,
         ),
       ),
       const SizedBox(height: 8),

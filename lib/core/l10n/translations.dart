@@ -91,6 +91,7 @@ abstract class Translations {
   String get tapToResume;
   String get start;
   String get finishAndSave;
+  String get skipBreak;
   String get discardSession;
   String get discardTitle;
   String get discardMessage;
@@ -200,7 +201,6 @@ class TranslationsDe extends Translations {
 
   // ---------- Allgemeines ----------
   final save = 'Speichern';
-  final saving = 'Speichern…';
   final cancel = 'Abbrechen';
   final delete = 'Löschen';
   final ok = 'OK';
@@ -260,6 +260,7 @@ class TranslationsDe extends Translations {
   final tapToResume = 'Tippe zum Fortsetzen';
   final start = 'Starten';
   final finishAndSave = 'Beenden und speichern';
+  final skipBreak = 'Pause überspringen';
   final discardSession = 'Sitzung verwerfen';
   final discardTitle = 'Diese Sitzung löschen?';
   final discardMessage = 'Die bisher erfasste Zeit wird verworfen.';
@@ -386,6 +387,52 @@ class TranslationsDe extends Translations {
   final deletionRequested = 'Löschung angefragt';
   String deletionRequestFailed(String error) =>
       'Löschung konnte nicht angefragt werden: $error';
+
+  // ---------- Seiten-Hilfe ----------
+  final helpButtonTooltip = 'Hilfe zu dieser Seite';
+  final helpClose = 'Hilfe schließen';
+  final helpPomodoroTitle = 'Pomodoro-Timer';
+  final helpPomodoroIntro = 'Lernen in festen Blöcken mit einer Pause danach.';
+  final helpPomodoroBullets = const [
+    'Lernzeit per Scrollen im Timer-Kreis einstellen und darunter die Pausenlänge wählen, dann „Starten“ oder auf den Kreis tippen.',
+    'Auf den Kreis tippen, um zu pausieren bzw. fortzusetzen.',
+    'Ist die Zeit um, kommt ein Hinweis und die Pause startet automatisch. Danach wirst du gefragt, was du gemacht hast und wie es lief.',
+    'Leg das Handy währenddessen hin: Wird es länger als 10 Sekunden bewegt, pausiert der Timer.',
+    '„Beenden und speichern“ legt die Sitzung im Verlauf ab, „Sitzung verwerfen“ löscht sie.',
+  ];
+  final helpStopwatchTitle = 'Stoppuhr';
+  final helpStopwatchIntro = 'Misst einfach, wie lange du lernst - ohne Zeitvorgabe und ohne Pause.';
+  final helpStopwatchBullets = const [
+    '„Starten“ oder auf den Kreis tippen; der Ring füllt sich einmal pro Minute.',
+    'Auf den Kreis tippen, um zu pausieren oder fortzusetzen.',
+    'Leg das Handy währenddessen hin: Wird es länger als 10 Sekunden bewegt, pausiert der Timer.',
+    '„Beenden und speichern“ legt die Sitzung im Verlauf ab, „Sitzung verwerfen“ löscht sie.',
+  ];
+  final helpFlowtimeTitle = 'Flowtime-Timer';
+  final helpFlowtimeIntro = 'Lernen, solange die Konzentration reicht; die Pause richtet sich nach der Lernzeit.';
+  final helpFlowtimeBullets = const [
+    'Auf den Kreis tippen, um zu starten. Die Zeit läuft hoch, im Kreis steht die bis jetzt verdiente Pause.',
+    'Lässt die Konzentration nach, erneut auf den Kreis tippen: Du gibst kurz an, was du gemacht hast, danach startet die Pause.',
+    'Pausenlänge: \n bis 25 Min Lernzeit = 5 Min Pause, \n bis 50 Min = 8 Min Pause, länger = 10 Min Pause.',
+    'Mit „Weiterlernen“ im Reflexionsfenster läuft derselbe Block ohne Pause weiter.',
+    'Leg das Handy währenddessen hin: Wird es länger als 10 Sekunden bewegt, pausiert der Timer.',
+  ];
+  final helpHistoryTitle = 'Verlauf';
+  final helpHistoryIntro = 'Deine gespeicherten Lernsitzungen.';
+  final helpHistoryBullets = const [
+    'Das Diagramm zeigt deine Lernzeit pro Tag in dieser Woche. Die roten Teile sind die Zeitabschnitte, wo das Handy aufgehoben wurde. Darunter die Gesamtzeit, Anzahl der Sitzungen und wie oft das Handy insgesamt aufgehoben wurde.',
+    'Jede Sitzung hat eine Zeitleiste: grün, solange das Handy still lag, rot, wenn es aufgehoben wurde, grau für Pausen.',
+    'Mit dem Papierkorb lässt sich eine Sitzung löschen.',
+    'Nach unten ziehen lädt die Liste neu.',
+  ];
+  final helpSettingsTitle = 'Einstellungen';
+  final helpSettingsIntro = 'Profil, Darstellung und die Verbindung zur Web-App.';
+  final helpSettingsBullets = const [
+    'Spitzname ändern und speichern.',
+    'Deine Daten, Dark Mode und Sprache werden auf diesem Gerät gespeichert.',
+    'Timer-Benachrichtigungen zeigen den laufenden Timer auf dem Sperrbildschirm und melden das Ende einer Pomodoro oder Pause.',
+    'Unter „Web-App“ meldest du dich bei der Paola-Web-App an. Ist sie verbunden, kannst du dort auch die Löschung deiner Daten anfragen.',
+  ];
 }
 
 class TranslationsEn extends Translations {
@@ -393,7 +440,6 @@ class TranslationsEn extends Translations {
 
   // ---------- General ----------
   final save = 'Save';
-  final saving = 'Saving…';
   final cancel = 'Cancel';
   final delete = 'Delete';
   final ok = 'OK';
@@ -453,6 +499,7 @@ class TranslationsEn extends Translations {
   final tapToResume = 'Tap to resume';
   final start = 'Start';
   final finishAndSave = 'Finish and save';
+  final skipBreak = 'Skip break';
   final discardSession = 'Discard session';
   final discardTitle = 'Delete this session?';
   final discardMessage = "The time you've tracked so far will be discarded.";
@@ -576,4 +623,50 @@ class TranslationsEn extends Translations {
   final deletionRequested = 'Deletion requested';
   String deletionRequestFailed(String error) =>
       'Could not request deletion: $error';
+
+  // ---------- Page help ----------
+  final helpButtonTooltip = 'Help for this page';
+  final helpClose = 'Close help';
+  final helpPomodoroTitle = 'Pomodoro timer';
+  final helpPomodoroIntro = 'Study in fixed blocks with a break afterwards.';
+  final helpPomodoroBullets = const [
+    'Set the study time by scrolling in the timer circle and pick a break length below, then tap "Start" or the circle to start.',
+    'Tap the circle to pause or resume.',
+    "When the time is up you get an alert and the break starts automatically. Then you're asked what you did and how it went.",
+    'Put your phone down: if it moves for more than 10 seconds, the timer pauses.',
+    '"Finish and save" stores the session in your history, "Discard session" deletes it.',
+  ];
+  final helpStopwatchTitle = 'Stopwatch';
+  final helpStopwatchIntro = 'Simply measures how long you study, no time limit and no break.';
+  final helpStopwatchBullets = const [
+    'Tap "Start" or the circle; the ring fills once per minute.',
+    'Tap the circle to pause or resume.',
+    'Put your phone down: if it moves for more than 10 seconds, the timer pauses.',
+    '"Finish and save" stores the session in your history, "Discard session" deletes it.',
+  ];
+  final helpFlowtimeTitle = 'Flowtime timer';
+  final helpFlowtimeIntro = 'Study for as long as you can focus; your break depends on how long you studied.';
+  final helpFlowtimeBullets = const [
+    'Tap the circle to start. The time counts up and the circle shows the break you have earned so far.',
+    'When your focus fades, tap the circle again: you briefly note what you did, then the break starts.',
+    'Break length: up to 25 min of study = 5 min break, up to 50 min = 8 min break, longer = 10 min break.',
+    '"Keep studying" in the reflection carries on with the same block without a break.',
+    'Put your phone down: if it moves for more than 10 seconds, the timer pauses.',
+  ];
+  final helpHistoryTitle = 'History';
+  final helpHistoryIntro = 'Your saved study sessions.';
+  final helpHistoryBullets = const [
+    'The chart shows your study time per day this week; below it the total time, number of sessions and how often the phone was picked up.',
+    'Each session has a timeline: green while the phone lay still, red when it was picked up, grey for pauses.',
+    'Use the bin icon to delete a session.',
+    'Pull down to reload the list.',
+  ];
+  final helpSettingsTitle = 'Settings';
+  final helpSettingsIntro = 'Profile, appearance and the web app connection.';
+  final helpSettingsBullets = const [
+    'Change your nickname and save it.',
+    'Your data, dark mode and language are stored on this device.',
+    'Timer notifications show the running timer on the lock screen and alert you when a pomodoro or break ends.',
+    'Under "Web app" you log in to the Paola web app. Once it is connected you can also request the deletion of your data there.',
+  ];
 }

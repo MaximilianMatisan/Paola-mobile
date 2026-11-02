@@ -3,7 +3,8 @@ import 'package:paola_mobile/features/timer/models/mood.dart';
 
 /// What the user did during a study session, chosen in the reflection after
 /// a pomodoro. [name] is what goes into focus_period.reflection.
-/// [marked] activities get the small orange dot, as in the web app.
+/// [marked] activities get a small orange dot in the web app (not shown in
+/// this app).
 enum StudyActivity {
   prepareLecture,
   attendLecture,
