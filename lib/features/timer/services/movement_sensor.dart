@@ -82,13 +82,16 @@ class MovementSensor extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Stops monitoring and closes the current period.
-  void stop() {
+  /// Stops monitoring and closes the current period. [at] is an earlier
+  /// moment the timer really stopped (pressed in the Live Activity while the
+  /// app was in the background); the timeline is cut off there.
+  void stop({DateTime? at}) {
     if (!monitoring) return;
     _sub?.cancel();
     _sub = null;
     _countdownTimer?.cancel();
     _closePeriod(DateTime.now(), pickedUp: pickedUp);
+    if (at != null) _cutOff(at);
     _periodStart = null;
     countdown = null;
     _prevX = _prevY = _prevZ = null;
@@ -109,6 +112,16 @@ class MovementSensor extends ChangeNotifier {
       _periods.add(FocusPeriod(start: start, end: end, pickedUp: pickedUp));
     }
     _periodStart = end;
+  }
+
+  /// Drops what was recorded after [end].
+  void _cutOff(DateTime end) {
+    _periods.removeWhere((p) => !p.start.isBefore(end));
+    if (_periods.isEmpty || !_periods.last.end.isAfter(end)) return;
+    final last = _periods.removeLast();
+    _periods.add(
+      FocusPeriod(start: last.start, end: end, pickedUp: last.pickedUp),
+    );
   }
 
   void _onEvent(AccelerometerEvent e) {

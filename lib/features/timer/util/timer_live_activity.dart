@@ -1,7 +1,9 @@
 // Live Activity that mirrors the study timer on the lock screen and in the
-// Dynamic Island (iOS only, see ios/InteractiveNotificationWidget). It counts
-// up the time worked; pause/resume and stop can be pressed there, and the app
-// picks those up via [TimerBridge] when it comes back to the foreground.
+// Dynamic Island (iOS only, see ios/InteractiveNotificationWidget). It shows
+// the current phase like the dial: pomodoro work and breaks count down,
+// stopwatch and flowtime work count up. Pause/resume and stop (during a break:
+// discard) can be pressed there, and the app picks those up via [TimerBridge]
+// when it comes back to the foreground.
 
 import 'dart:io';
 
@@ -26,21 +28,33 @@ class TimerLiveActivity {
   bool get active => _activityId != null;
 
   /// Starts the activity, or updates it if one is already shown.
-  /// With [hideTime] it shows dots instead of the time; the time is still
-  /// passed along, so pausing there keeps the app in sync.
+  /// [accumulated] is the time elapsed in the current phase. With
+  /// [countsDown] the activity shows what is left of [phase] instead.
+  /// With [hideTime] it hides the time; the time is still passed along, so
+  /// pausing there keeps the app in sync.
   void show({
     required ColorScheme colors,
+    required String title,
+    required String rateTitle,
     required DateTime segmentStart,
     required Duration accumulated,
     required bool paused,
+    required bool countsDown,
+    required Duration phase,
+    required bool isBreak,
     required bool hideTime,
   }) {
     if (!supported) return;
     final data = {
+      'title': title,
+      'rateTitle': rateTitle,
       'currentSegmentStartTimeMs': segmentStart.millisecondsSinceEpoch
           .toString(),
       'accumulatedSeconds': accumulated.inSeconds.toString(),
       'isPaused': paused,
+      'countsDown': countsDown,
+      'phaseSeconds': phase.inSeconds.toString(),
+      'isBreak': isBreak,
       'hideTime': hideTime,
     };
     _run(() async {

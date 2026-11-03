@@ -33,23 +33,24 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
             
             let backgroundColor = getBackgroundColor(context: context)
             let shownTime = getShownTime(context: context)
-            
+            let icon = getIcon(context: context)
+
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Text("📚").font(.title)
+                    Text(icon).font(.title)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack {
-                        Text("Time studied:").font(.title3)
+                        Text(getTitle(context: context)).font(.title3)
                         shownTime
                     }
                 }
             } compactLeading: {
-                Text("📚")
+                Text(icon)
             } compactTrailing: {
-                shownTime
+                shownTime.monospacedDigit()
             } minimal: {
-                Text("📚")
+                Text(icon)
             }
             .keylineTint(backgroundColor)
         }
@@ -60,12 +61,24 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
         let containerColor = getContainerColor(context: context)
         let textColor = getTextColor(context: context)
         let isPaused = sharedDefault.bool(forKey: context.attributes.prefixedKey("isPaused"))
-        
+        let isBreak = sharedDefault.bool(forKey: context.attributes.prefixedKey("isBreak"))
+
         let activityID = context.attributes.id.uuidString
 
-        return VStack {
+        return VStack(alignment: .leading, spacing: 0) {
+            Text("\(getIcon(context: context)) \(getTitle(context: context))")
+                .font(.subheadline)
+                .bold()
+                .foregroundStyle(textColor)
+                .padding(EdgeInsets(
+                    top: DEFAULT_PADDING,
+                    leading: DEFAULT_PADDING * 2,
+                    bottom: 0,
+                    trailing: DEFAULT_PADDING * 2
+                ))
             HStack{
                 getShownTime(context: context)
+                    .monospacedDigit()
                     .padding(DEFAULT_PADDING)
                     .background(
                         RoundedRectangle(cornerRadius: 2*DEFAULT_CORNER_RADIUS)
@@ -75,6 +88,7 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
                 createTimerLiveActivityButtons(
                     activityID: activityID,
                     isPaused: isPaused,
+                    isBreak: isBreak,
                     textColor: textColor,
                     containerColor: containerColor
                 )
@@ -86,10 +100,11 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
     func createTimerLiveActivityButtons(
         activityID: String,
         isPaused: Bool,
+        isBreak: Bool,
         textColor: Color,
         containerColor: Color
     ) -> some View {
-        
+
         let toggleIcon = isPaused ? "play.fill" : "pause.fill"
         return HStack {
             createButton(
@@ -98,12 +113,21 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
                 buttonIcon: .system(toggleIcon),
                 intent: ToggleTimerIntent(activityId: activityID)
             )
-            createButton(
-                textColor: textColor,
-                containerColor: containerColor,
-                buttonIcon: .system("stop.fill"),
-                intent: EndTimerIntent(activityId: activityID)
-            )
+            if isBreak {
+                createButton(
+                    textColor: textColor,
+                    containerColor: containerColor,
+                    buttonIcon: .system("xmark.circle.fill"),
+                    intent: DiscardBreakIntent(activityId: activityID)
+                )
+            } else {
+                createButton(
+                    textColor: textColor,
+                    containerColor: containerColor,
+                    buttonIcon: .system("stop.fill"),
+                    intent: EndTimerIntent(activityId: activityID)
+                )
+            }
         }
     }
     func createButton(
@@ -134,10 +158,17 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
         let currentSegmentStartTime = Int(sharedDefault.string(forKey: context.attributes.prefixedKey("currentSegmentStartTimeMs")) ?? "0") ?? 0
         let accumulatedSeconds = Int(sharedDefault.string(forKey: context.attributes.prefixedKey("accumulatedSeconds")) ?? "0") ?? 0
         let isPaused = sharedDefault.bool(forKey: context.attributes.prefixedKey("isPaused"))
-        
+        let countsDown = sharedDefault.bool(forKey: context.attributes.prefixedKey("countsDown"))
+        let phaseSeconds = Int(sharedDefault.string(forKey: context.attributes.prefixedKey("phaseSeconds")) ?? "0") ?? 0
+
         let tempStart = Date(timeIntervalSince1970: Double(currentSegmentStartTime)/1000).addingTimeInterval(-Double(accumulatedSeconds))
-    
-        let shownText = if (isPaused) {
+
+        let shownText = if (countsDown && isPaused) {
+            Text(formatTime(seconds: max(0, phaseSeconds - accumulatedSeconds)))
+        } else if (countsDown) {
+            // Stops at 0:00 if the phase ends while the app is in the background.
+            Text(timerInterval: tempStart...tempStart.addingTimeInterval(Double(phaseSeconds)), countsDown: true)
+        } else if (isPaused) {
             Text(formatTime(seconds: accumulatedSeconds))
         } else {
             Text(timerInterval: tempStart...Date.distantFuture, countsDown: false)
@@ -169,7 +200,7 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
         let activityID = context.attributes.id.uuidString
 
         return VStack {
-            Text("Rate your study session!")
+            Text(sharedDefault.string(forKey: context.attributes.prefixedKey("rateTitle")) ?? "Rate your study session!")
                 .bold()
                 .foregroundStyle(textColor)
             HStack{
@@ -187,6 +218,13 @@ struct InteractiveNotificationWidgetLiveActivity: Widget {
         .activitySystemActionForegroundColor(Color.black)
     }
     
+    func getTitle(context: ActivityViewContext<LiveActivitiesAppAttributes>) -> String {
+        sharedDefault.string(forKey: context.attributes.prefixedKey("title")) ?? ""
+    }
+    func getIcon(context: ActivityViewContext<LiveActivitiesAppAttributes>) -> String {
+        sharedDefault.bool(forKey: context.attributes.prefixedKey("isBreak")) ? "☕️" : "📚"
+    }
+
     func getBackgroundColor(context: ActivityViewContext<LiveActivitiesAppAttributes>) -> Color {
         let backgroundColor = sharedDefault.integer(forKey: context.attributes.prefixedKey("backgroundColor"))
         return Color.init(argb: backgroundColor)

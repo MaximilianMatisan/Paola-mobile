@@ -37,9 +37,28 @@ struct EndTimerIntent: LiveActivityIntent {
     init(activityId: String) { self.activityId = activityId }
     
     func perform() async throws -> some IntentResult {
-        SharedTimerState.pauseTimer(id: activityId)
+        if !SharedTimerState.isPaused(id: activityId) {
+            SharedTimerState.pauseTimer(id: activityId)
+        }
         SharedTimerState.safeFinalTime(id: activityId)
         await SharedTimerState.refresh(id: activityId)
+        return .result()
+    }
+}
+
+struct DiscardBreakIntent: LiveActivityIntent {
+    static var title: LocalizedStringResource { "Discard break" }
+    static var isDiscoverable: Bool { false }
+    
+    @Parameter(title:"Activity Id")
+    var activityId: String
+    
+    init() {}
+    init(activityId: String) { self.activityId = activityId }
+    
+    func perform() async throws -> some IntentResult {
+        SharedTimerState.safeBreakDiscarded()
+        await SharedTimerState.end(id: activityId)
         return .result()
     }
 }

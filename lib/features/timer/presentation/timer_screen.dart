@@ -16,9 +16,9 @@ import 'package:paola_mobile/features/timer/services/movement_sensor.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
+import 'package:paola_mobile/features/timer/models/mood.dart';
 import 'package:paola_mobile/features/timer/models/timer_mode.dart';
 import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
-import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
 import 'package:paola_mobile/features/timer/util/flowtime.dart';
 import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
@@ -88,6 +88,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     HideTime.enabled.addListener(_onHideTimeChanged);
+    _dropStaleLiveActivityResults();
   }
 
   @override
@@ -106,60 +107,103 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) _syncFromLiveActivity();
   }
 
+  /// Results of a Live Activity from before the app was (re)started belong
+  /// to no session; left in place they would show the rating in the next one.
+  Future<void> _dropStaleLiveActivityResults() async {
+    if (!TimerLiveActivity.supported) return;
+    await TimerBridge.consumeSelfAssessmentMoodString();
+    await TimerBridge.consumeFinishedSeconds();
+    await TimerBridge.consumeFinishedAtMs();
+    await TimerBridge.consumeBreakDiscarded();
+  }
+
   /// Takes over what was pressed in the Live Activity while the app was in the background.
   Future<void> _syncFromLiveActivity() async {
     if (!TimerLiveActivity.supported) return;
     final moodString = await TimerBridge.consumeSelfAssessmentMoodString();
-    final finalTime = await TimerBridge.consumeFinishedSeconds();
+    final finishedSeconds = await TimerBridge.consumeFinishedSeconds();
+    final finishedAtMs = await TimerBridge.consumeFinishedAtMs();
+    final breakDiscarded = await TimerBridge.consumeBreakDiscarded() ?? false;
     if (!mounted) return;
 
-    if (moodString != null || finalTime != null) {
-      // Stopped on the lock screen.
-      if (moodString != null) debugPrint('$moodString mood assessment');
-      if (_configuring) return;
-      _finish();
-      if (moodString == null && finalTime! > 0) _switchToSelfAssessment();
+    if (breakDiscarded) {
+      if (_onBreak) _reset();
       return;
     }
 
-    if (_onBreak || !_liveActivity.active) return;
+    if (finishedSeconds != null) {
+      _finishFromLiveActivity(
+        at: finishedAtMs == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(finishedAtMs),
+        mood: Mood.values.asNameMap()[moodString],
+      );
+      return;
+    }
+
+    if (!_liveActivity.active) return;
     final nativeState = await TimerBridge.getState();
     if (nativeState == null || !mounted) return;
     final paused = nativeState['isPaused'] as bool;
     final accumulated = Duration(
       seconds: nativeState['accumulatedSeconds'] as int,
     );
+    final segmentStart = DateTime.fromMillisecondsSinceEpoch(
+      nativeState['currentSegmentStartTimeMs'] as int,
+    );
     if (paused && _running) {
-      _pause(at: accumulated);
+      _pause(at: accumulated, stoppedAt: segmentStart);
     } else if (!paused && !_running) {
       _banked = accumulated;
-      _start(
-        since: DateTime.fromMillisecondsSinceEpoch(
-          nativeState['currentSegmentStartTimeMs'] as int,
-        ),
-      );
+      _start(since: segmentStart);
     }
   }
 
-  void _switchToSelfAssessment() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => SelfAssessmentPage()),
-    );
+  /// Stopped on the lock screen [at] that moment: saves the work session up
+  /// to then and asks for the reflection, like at the end of a pomodoro.
+  /// The [mood] rated on the lock screen is preset there.
+  Future<void> _finishFromLiveActivity({DateTime? at, Mood? mood}) async {
+    if (_configuring) return;
+    if (_onBreak) {
+      // Breaks have a discard button instead; nothing to save anyway.
+      _reset();
+      return;
+    }
+    _sensor.stop(at: at);
+    final session = _takeSession();
+    _reset();
+    if (session != null) {
+      await _reflect(session, initialMood: mood, canKeepStudying: false);
+    }
   }
 
-  /// Mirrors the work time in the Live Activity; there is none during breaks.
+  String get _phaseTitle {
+    final t = context.t;
+    if (_onBreak) return t.breakLabel;
+    return switch (_mode) {
+      TimerMode.stopwatch => t.stopwatch,
+      TimerMode.flowtime => t.flowtime,
+      TimerMode.pomodoro => '${t.pomodoro} · $_workLabel',
+    };
+  }
+
+  /// Mirrors the current phase (work or break) in the Live Activity.
   void _syncLiveActivity() {
-    if (_configuring || _onBreak) {
+    if (_configuring) {
       _liveActivity.end();
       return;
     }
     _liveActivity.show(
       colors: Theme.of(context).colorScheme,
+      title: _phaseTitle,
+      rateTitle: context.t.rateSession,
       segmentStart: _runStart ?? DateTime.now(),
       accumulated: _banked,
       paused: !_running,
-      hideTime: HideTime.enabled.value,
+      countsDown: _countingDown,
+      phase: _phaseTotal,
+      isBreak: _onBreak,
+      hideTime: HideTime.enabled.value && !_onBreak,
     );
   }
 
@@ -183,12 +227,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     setState(() {});
   }
 
-  /// [at] is the elapsed time of a pause pressed in the Live Activity.
-  void _pause({Duration? at}) {
+  /// [at] is the elapsed time of a pause pressed in the Live Activity,
+  /// [stoppedAt] the moment it was pressed.
+  void _pause({Duration? at, DateTime? stoppedAt}) {
     _banked = at ?? _elapsed;
     _runStart = null;
     _ticker?.cancel();
-    _sensor.stop();
+    _sensor.stop(at: stoppedAt);
     _syncNotification();
     _syncLiveActivity();
     setState(() {});
@@ -321,8 +366,17 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
 
   /// Asks what was done in the finished pomodoro or flowtime block (the break already runs
   /// behind the dialog), then saves [session] accordingly.
-  Future<void> _reflect(FocusSession session) async {
-    final result = await showReflection(context, studied: session.duration);
+  Future<void> _reflect(
+    FocusSession session, {
+    Mood? initialMood,
+    bool canKeepStudying = true,
+  }) async {
+    final result = await showReflection(
+      context,
+      studied: session.duration,
+      initialMood: initialMood,
+      canKeepStudying: canKeepStudying,
+    );
     switch (result.action) {
       case ReflectionAction.discard:
         return;
@@ -342,13 +396,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   void _syncNotification() {
     final t = context.t;
     final countdown = _countingDown;
-    final title = _onBreak
-        ? t.breakLabel
-        : switch (_mode) {
-            TimerMode.stopwatch => t.stopwatch,
-            TimerMode.flowtime => t.flowtime,
-            TimerMode.pomodoro => '${t.pomodoro} · $_workLabel',
-          };
+    final title = _phaseTitle;
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
     final Future<void> shown;

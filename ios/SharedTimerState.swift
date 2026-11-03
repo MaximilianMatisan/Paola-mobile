@@ -60,8 +60,13 @@ enum SharedTimerState {
     
     static func safeFinalTime(id: String) {
         defaults.set(String(totalSeconds(id: id)), forKey: "pendingFinishedSeconds")
+        defaults.set(currentSegmentStartTime(id: id), forKey: "pendingFinishedAtMs")
     }
     
+    static func safeBreakDiscarded() {
+        defaults.set(true, forKey: "pendingBreakDiscarded")
+    }
+
     static func safeSelfAssessment(id: String, moodString: String) {
         defaults.set(moodString, forKey: "pendingSelfAssessmentMood")
     }
