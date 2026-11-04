@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/auth/presentation/widgets/login_form.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
-
-  final String title = 'Login';
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsetsGeometry.all(15),
-        child: LoginForm()
+      backgroundColor: context.colors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: LoginForm(),
+        ),
       ),
     );
   }

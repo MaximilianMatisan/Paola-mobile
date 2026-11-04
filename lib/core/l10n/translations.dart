@@ -56,9 +56,9 @@ abstract class Translations {
 
   // ---------- Login - features/auth/presentation ----------
   String get loginWelcome;
-  String get loginSubtitle;
   String get loginUsername;
   String get loginPassword;
+  String get loginForgotPassword;
   String get loginEnterUsername;
   String get loginEnterPassword;
   String get loginButton;
@@ -226,13 +226,13 @@ class TranslationsDe extends Translations {
   final navSettings = 'Einstellungen';
 
   // ---------- Anmeldung ----------
-  final loginWelcome = 'Willkommen bei Paola';
-  final loginSubtitle = 'Melde dich an, um fortzufahren';
+  final loginWelcome = 'Bei Paola anmelden!';
   final loginUsername = 'Benutzername';
   final loginPassword = 'Passwort';
+  final loginForgotPassword = 'Passwort vergessen';
   final loginEnterUsername = 'Bitte gib deinen Benutzernamen ein';
   final loginEnterPassword = 'Bitte gib dein Passwort ein';
-  final loginButton = 'ANMELDEN';
+  final loginButton = 'Anmelden';
   final loginContact = 'Kontakt';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
@@ -422,13 +422,13 @@ class TranslationsEn extends Translations {
   final navSettings = 'Settings';
 
   // ---------- Login ----------
-  final loginWelcome = 'Welcome to Paola';
-  final loginSubtitle = 'Log in to continue';
+  final loginWelcome = 'Log in to Paola!';
   final loginUsername = 'Username';
   final loginPassword = 'Password';
+  final loginForgotPassword = 'Forgot password';
   final loginEnterUsername = 'Please enter your username';
   final loginEnterPassword = 'Please enter your password';
-  final loginButton = 'LOG IN';
+  final loginButton = 'Log in';
   final loginContact = 'Contact';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
