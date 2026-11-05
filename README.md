@@ -17,7 +17,7 @@
 * [ ] offline funktionalität anschauen
   * [ ] SSO
   * [ ] login seite -> password ändern button, schickt email an armin, manuell zurückgesetzt
-  * [ ] "sync mit web applikation" option in einstellungen
+  * [x] "sync mit web applikation" option in einstellungen
     * [ ] datenschutz
   * [ ] qr code wie bei whatsapp zum sync
 * [x] translations
@@ -45,7 +45,7 @@
 * [ ] aha moment als stern pro aufgabe in popup nach timer
 * [ ] aufgaben rein wie bei mathe vorkurs -> anhand der aktuellen KW herleiten welche aufgabe
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
-* [ ] hilfe button auf jeder seite
+* [x] hilfe button auf jeder seite
 * [ ] kontakt button
 
 ## Funktionen
