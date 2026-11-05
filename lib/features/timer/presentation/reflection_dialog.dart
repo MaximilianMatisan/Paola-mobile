@@ -31,16 +31,24 @@ class ReflectionResult {
 }
 
 /// Asks how the [studied] time was spent. Back button and the close icon
-/// count as [ReflectionAction.skip].
+/// count as [ReflectionAction.skip]. [initialMood] (rated on the lock screen)
+/// is preset for every chosen activity. Without [canKeepStudying] there is no
+/// "Keep studying" button, e.g. after the timer was stopped.
 Future<ReflectionResult> showReflection(
   BuildContext context, {
   required Duration studied,
+  Mood? initialMood,
+  bool canKeepStudying = true,
 }) async {
   final result = await showDialog<ReflectionResult>(
     context: context,
     barrierDismissible: false,
     barrierColor: context.colors.scrim,
-    builder: (context) => _ReflectionDialog(studied.inSeconds),
+    builder: (context) => _ReflectionDialog(
+      studied.inSeconds,
+      initialMood: initialMood,
+      canKeepStudying: canKeepStudying,
+    ),
   );
   return result ?? const ReflectionResult(ReflectionAction.skip);
 }
@@ -55,8 +63,14 @@ String _durationText(int seconds) {
 
 class _ReflectionDialog extends StatefulWidget {
   final int total;
+  final Mood? initialMood;
+  final bool canKeepStudying;
 
-  const _ReflectionDialog(this.total);
+  const _ReflectionDialog(
+    this.total, {
+    this.initialMood,
+    this.canKeepStudying = true,
+  });
 
   @override
   State<_ReflectionDialog> createState() => _ReflectionDialogState();
@@ -79,7 +93,10 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
 
   void _toggle(StudyActivity a) {
     setState(() {
-      if (!_selected.remove(a)) _selected.add(a);
+      if (!_selected.remove(a)) {
+        _selected.add(a);
+        if (widget.initialMood case final mood?) _ratings[a] = mood;
+      }
       _ratings.removeWhere((k, _) => !_selected.contains(k));
       _splitEvenly();
     });
@@ -176,14 +193,16 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Row(
                 children: [
-                  Expanded(
-                    child: PaolaButton(
-                      label: t.reflectionContinue,
-                      style: PaolaButtonStyle.secondary,
-                      onPressed: () => _close(ReflectionAction.keepStudying),
+                  if (widget.canKeepStudying) ...[
+                    Expanded(
+                      child: PaolaButton(
+                        label: t.reflectionContinue,
+                        style: PaolaButtonStyle.secondary,
+                        onPressed: () => _close(ReflectionAction.keepStudying),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                  ],
                   Expanded(
                     child: PaolaButton(
                       label: _lastStep ? t.reflectionSave : t.reflectionNext,

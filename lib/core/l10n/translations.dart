@@ -55,9 +55,9 @@ abstract class Translations {
 
   // ---------- Login - features/auth/presentation ----------
   String get loginWelcome;
-  String get loginSubtitle;
   String get loginUsername;
   String get loginPassword;
+  String get loginForgotPassword;
   String get loginEnterUsername;
   String get loginEnterPassword;
   String get loginButton;
@@ -180,6 +180,9 @@ abstract class Translations {
   String get appearance;
   String get darkMode;
   String get darkModeDesc;
+  String darkModeSaveFailed(String error);
+  String get hideTime;
+  String get hideTimeDesc;
   String get language;
   String get languageDesc;
   String get notifications;
@@ -243,13 +246,13 @@ class TranslationsDe extends Translations {
   final navSettings = 'Einstellungen';
 
   // ---------- Anmeldung ----------
-  final loginWelcome = 'Willkommen bei Paola';
-  final loginSubtitle = 'Melde dich an, um fortzufahren';
+  final loginWelcome = 'Bei Paola anmelden!';
   final loginUsername = 'Benutzername';
   final loginPassword = 'Passwort';
+  final loginForgotPassword = 'Passwort vergessen';
   final loginEnterUsername = 'Bitte gib deinen Benutzernamen ein';
   final loginEnterPassword = 'Bitte gib dein Passwort ein';
-  final loginButton = 'ANMELDEN';
+  final loginButton = 'Anmelden';
   final loginContact = 'Kontakt';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
@@ -386,6 +389,11 @@ class TranslationsDe extends Translations {
   final appearance = 'Darstellung';
   final darkMode = 'Dark Mode';
   final darkModeDesc = 'Dunkles Farbschema verwenden';
+  String darkModeSaveFailed(String error) =>
+      'Dark Mode konnte nicht gespeichert werden: $error';
+  final hideTime = 'Zeit ausblenden';
+  final hideTimeDesc =
+      'Beim Lernen drei Punkte statt der Zeit zeigen. Pausen bleiben sichtbar.';
   final language = 'Sprache';
   final languageDesc = 'Sprache der App';
   final notifications = 'Benachrichtigungen';
@@ -480,13 +488,13 @@ class TranslationsEn extends Translations {
   final navSettings = 'Settings';
 
   // ---------- Login ----------
-  final loginWelcome = 'Welcome to Paola';
-  final loginSubtitle = 'Log in to continue';
+  final loginWelcome = 'Log in to Paola!';
   final loginUsername = 'Username';
   final loginPassword = 'Password';
+  final loginForgotPassword = 'Forgot password';
   final loginEnterUsername = 'Please enter your username';
   final loginEnterPassword = 'Please enter your password';
-  final loginButton = 'LOG IN';
+  final loginButton = 'Log in';
   final loginContact = 'Contact';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
@@ -623,6 +631,10 @@ class TranslationsEn extends Translations {
   final appearance = 'Appearance';
   final darkMode = 'Dark mode';
   final darkModeDesc = 'Use a dark color scheme';
+  String darkModeSaveFailed(String error) => 'Could not save dark mode: $error';
+  final hideTime = 'Hide time';
+  final hideTimeDesc =
+      'Show three dots instead of the time while studying. Breaks stay visible.';
   final language = 'Language';
   final languageDesc = 'Language of the app';
   final notifications = 'Notifications';

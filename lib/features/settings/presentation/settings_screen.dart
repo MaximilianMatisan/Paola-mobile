@@ -1,6 +1,6 @@
-// Settings: change nickname, toggle dark mode, choose the language, check
-// timer notifications and set up the (optional) web app connection.
-// Everything except the web app part is stored on the device.
+// Settings: change nickname, toggle dark mode, choose the language, hide the
+// timer's time, check timer notifications and set up the (optional) web app
+// connection. Everything except the web app part is stored on the device.
 
 import 'package:flutter/material.dart';
 
@@ -10,6 +10,7 @@ import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
@@ -228,6 +229,29 @@ class _SettingsScreenState extends State<SettingsScreen>
                     _LanguagePicker(
                       value: AppLanguage.current.value,
                       onChanged: _setLanguage,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            _Group(
+              label: t.timerTitle,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _RowText(
+                        title: t.hideTime,
+                        subtitle: t.hideTimeDesc,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ListenableBuilder(
+                      listenable: HideTime.enabled,
+                      builder: (context, _) => _Toggle(
+                        value: HideTime.enabled.value,
+                        onChanged: HideTime.set,
+                      ),
                     ),
                   ],
                 ),

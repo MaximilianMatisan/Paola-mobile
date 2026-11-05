@@ -10,6 +10,12 @@ class TimerBridge {
   static Future<int?> consumeFinishedSeconds() => 
       _methodChannel.invokeMethod<int>('consumeFinishedSeconds');
   
+  static Future<int?> consumeFinishedAtMs() =>
+      _methodChannel.invokeMethod<int>('consumeFinishedAtMs');
+
+  static Future<bool?> consumeBreakDiscarded() =>
+      _methodChannel.invokeMethod<bool>('consumeBreakDiscarded');
+
   static Future<String?> consumeSelfAssessmentMoodString() =>
       _methodChannel.invokeMethod<String>('consumeSelfAssessmentMoodString');
 }

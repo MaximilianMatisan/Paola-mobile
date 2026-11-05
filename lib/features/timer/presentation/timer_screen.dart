@@ -19,10 +19,11 @@ import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
+import 'package:paola_mobile/features/timer/models/mood.dart';
 import 'package:paola_mobile/features/timer/models/timer_mode.dart';
 import 'package:paola_mobile/features/timer/presentation/reflection_dialog.dart';
-import 'package:paola_mobile/features/timer/presentation/self_assessment_page.dart';
 import 'package:paola_mobile/features/timer/util/flowtime.dart';
+import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_bridge.dart';
 import 'package:paola_mobile/features/timer/util/timer_live_activity.dart';
 
@@ -94,11 +95,14 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    HideTime.enabled.addListener(_onHideTimeChanged);
+    _dropStaleLiveActivityResults();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    HideTime.enabled.removeListener(_onHideTimeChanged);
     _ticker?.cancel();
     _sensor.dispose();
     TimerNotification.cancel();
@@ -111,60 +115,123 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) _syncFromLiveActivity();
   }
 
+  /// Results of a Live Activity from before the app was (re)started belong
+  /// to no session; left in place they would show the rating in the next one.
+  Future<void> _dropStaleLiveActivityResults() async {
+    if (!TimerLiveActivity.supported) return;
+    await TimerBridge.consumeSelfAssessmentMoodString();
+    await TimerBridge.consumeFinishedSeconds();
+    await TimerBridge.consumeFinishedAtMs();
+    await TimerBridge.consumeBreakDiscarded();
+  }
+
   /// Takes over what was pressed in the Live Activity while the app was in the background.
   Future<void> _syncFromLiveActivity() async {
     if (!TimerLiveActivity.supported) return;
     final moodString = await TimerBridge.consumeSelfAssessmentMoodString();
-    final finalTime = await TimerBridge.consumeFinishedSeconds();
+    final finishedSeconds = await TimerBridge.consumeFinishedSeconds();
+    final finishedAtMs = await TimerBridge.consumeFinishedAtMs();
+    final breakDiscarded = await TimerBridge.consumeBreakDiscarded() ?? false;
     if (!mounted) return;
 
-    if (moodString != null || finalTime != null) {
-      // Stopped on the lock screen.
-      if (moodString != null) debugPrint('$moodString mood assessment');
-      if (_configuring) return;
-      _finish();
-      if (moodString == null && finalTime! > 0) _switchToSelfAssessment();
+    if (breakDiscarded) {
+      if (_onBreak) _discardBreak();
       return;
     }
 
-    if (_onBreak || !_liveActivity.active) return;
+    if (finishedSeconds != null) {
+      _finishFromLiveActivity(
+        at: finishedAtMs == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(finishedAtMs),
+        mood: Mood.values.asNameMap()[moodString],
+      );
+      return;
+    }
+
+    if (!_liveActivity.active) return;
     final nativeState = await TimerBridge.getState();
     if (nativeState == null || !mounted) return;
     final paused = nativeState['isPaused'] as bool;
     final accumulated = Duration(
       seconds: nativeState['accumulatedSeconds'] as int,
     );
+    final segmentStart = DateTime.fromMillisecondsSinceEpoch(
+      nativeState['currentSegmentStartTimeMs'] as int,
+    );
     if (paused && _running) {
-      _pause(at: accumulated);
+      _pause(at: accumulated, stoppedAt: segmentStart);
     } else if (!paused && !_running) {
       _banked = accumulated;
-      _start(
-        since: DateTime.fromMillisecondsSinceEpoch(
-          nativeState['currentSegmentStartTimeMs'] as int,
-        ),
-      );
+      _start(since: segmentStart);
     }
   }
 
-  void _switchToSelfAssessment() {
-    Navigator.pushReplacement(
+  /// Stopped on the lock screen [at] that moment: ends the whole session up
+  /// to then and asks for the reflection. The [mood] rated on the lock screen
+  /// is preset there.
+  Future<void> _finishFromLiveActivity({DateTime? at, Mood? mood}) async {
+    if (_configuring) return;
+    if (_onBreak) {
+      // Breaks have a discard button instead.
+      _discardBreak();
+      return;
+    }
+    _sensor.stop(at: at);
+    final session = _takeWholeSession();
+    _reset();
+    if (session == null) return;
+    final result = await showReflection(
       context,
-      MaterialPageRoute(builder: (context) => SelfAssessmentPage()),
+      studied: session.duration,
+      initialMood: mood,
+      canKeepStudying: false,
     );
+    if (!mounted) return;
+    switch (result.action) {
+      case ReflectionAction.save:
+        _save(session.withReflection(result.reflection));
+      case ReflectionAction.skip:
+        _save(session);
+      case ReflectionAction.discard:
+      case ReflectionAction.keepStudying:
+        break;
+    }
   }
 
-  /// Mirrors the work time in the Live Activity; there is none during breaks.
+  String get _phaseTitle {
+    final t = context.t;
+    if (_onBreak) return t.breakLabel;
+    return switch (_mode) {
+      TimerMode.stopwatch => t.stopwatch,
+      TimerMode.flowtime => t.flowtime,
+      TimerMode.pomodoro => '${t.pomodoro} · $_workLabel',
+    };
+  }
+
+  /// Mirrors the current phase (work or break) in the Live Activity.
   void _syncLiveActivity() {
-    if (_configuring || _onBreak) {
+    if (_configuring) {
       _liveActivity.end();
       return;
     }
     _liveActivity.show(
       colors: Theme.of(context).colorScheme,
+      title: _phaseTitle,
+      rateTitle: context.t.rateSession,
       segmentStart: _runStart ?? DateTime.now(),
       accumulated: _banked,
       paused: !_running,
+      countsDown: _countingDown,
+      phase: _phaseTotal,
+      isBreak: _onBreak,
+      hideTime: HideTime.enabled.value && !_onBreak,
     );
+  }
+
+  /// The setting was switched while a Live Activity is shown.
+  void _onHideTimeChanged() {
+    if (_liveActivity.active) _syncLiveActivity();
   }
 
   /// [since] resumes a run that was started in the Live Activity.
@@ -182,12 +249,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     setState(() {});
   }
 
-  /// [at] is the elapsed time of a pause pressed in the Live Activity.
-  void _pause({Duration? at}) {
+  /// [at] is the elapsed time of a pause pressed in the Live Activity,
+  /// [stoppedAt] the moment it was pressed.
+  void _pause({Duration? at, DateTime? stoppedAt}) {
     _banked = at ?? _elapsed;
     _runStart = null;
     _ticker?.cancel();
-    _sensor.stop();
+    _sensor.stop(at: stoppedAt);
     _syncNotification();
     _syncLiveActivity();
     setState(() {});
@@ -269,13 +337,6 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     });
   }
 
-  /// Saves the session without asking (stopped on the lock screen).
-  void _finish() {
-    final session = _takeWholeSession();
-    if (session != null) _save(session);
-    _reset();
-  }
-
   /// "Finish and save": holds the timer and asks for the reflection.
   /// "Keep studying" carries on where the session was.
   Future<void> _finishWithReflection() async {
@@ -302,6 +363,13 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         break;
     }
     _reset();
+  }
+
+  /// Discarded on the lock screen: only the break ends, the blocks before it
+  /// are not saved yet and the session stays open.
+  void _discardBreak() {
+    TimerNotification.cancelEnd(TimerPhase.breakTime);
+    _idle();
   }
 
   /// Between two blocks: nothing runs and tapping the dial starts the next
@@ -364,13 +432,7 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   void _syncNotification() {
     final t = context.t;
     final countdown = _countingDown;
-    final title = _onBreak
-        ? t.breakLabel
-        : switch (_mode) {
-            TimerMode.stopwatch => t.stopwatch,
-            TimerMode.flowtime => t.flowtime,
-            TimerMode.pomodoro => '${t.pomodoro} · $_workLabel',
-          };
+    final title = _phaseTitle;
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
     final Future<void> shown;
@@ -482,25 +544,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
                 onChanged: _setMode,
               ),
               const SizedBox(height: 24),
-              _Dial(
-                progress: configuring ? 0 : _progress(),
-                hint: _flowStudying
-                    ? context.t.tapForBreak
-                    : _running
-                    ? context.t.tapToPause
-                    : configuring
-                    ? context.t.tapToStart
-                    : context.t.tapToResume,
-                onTap: _flowStudying
-                    ? _takeBreak
-                    : _running
-                    ? _pause
-                    : pomodoro && configuring && _workSeconds == 0
-                    ? null
-                    : _start,
-                child: configuring
-                    ? (pomodoro ? _pomodoroSetter() : const _DialTime('00:00'))
-                    : _runningDisplay(),
+              ListenableBuilder(
+                listenable: HideTime.enabled,
+                builder: (context, _) => _dial(pomodoro, configuring),
               ),
               if (_running && !_onBreak) ...[
                 const SizedBox(height: 24),
@@ -553,6 +599,41 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       bullets: t.helpFlowtimeBullets,
     ),
   };
+
+  Widget _dial(bool pomodoro, bool configuring) {
+    // With the time hidden the ring stays empty too, since it would show
+    // the progress.
+    final hidden = HideTime.enabled.value && !configuring && !_onBreak;
+    return _Dial(
+      progress: configuring || hidden ? 0 : _progress(),
+      hint: _flowStudying
+          ? context.t.tapForBreak
+          : _running
+          ? context.t.tapToPause
+          : configuring
+          ? context.t.tapToStart
+          : context.t.tapToResume,
+      onTap: _flowStudying
+          ? _takeBreak
+          : _running
+          ? _pause
+          : pomodoro && configuring && _workSeconds == 0
+          ? null
+          : _start,
+      child: configuring
+          ? (pomodoro ? _pomodoroSetter() : const _DialTime('00:00'))
+          : hidden
+          ? _HiddenTime(
+              running: _running,
+              label: switch (_mode) {
+                TimerMode.pomodoro => context.t.ofWork(_workText),
+                TimerMode.flowtime => context.t.flowtime,
+                TimerMode.stopwatch => context.t.stopwatch,
+              },
+            )
+          : _runningDisplay(),
+    );
+  }
 
   double _progress() {
     final elapsed = _elapsed;
@@ -810,7 +891,7 @@ class _Dot extends StatelessWidget {
 }
 
 /// Pomodoro / Flowtime / Stopwatch switch. The selected mode is dark while the timer
-/// can be set up and grey while it runs.
+/// can be set up and grey/unchangeable while it runs.
 class _ModeToggle extends StatelessWidget {
   final TimerMode mode;
   final bool active;
@@ -841,7 +922,7 @@ class _ModeToggle extends StatelessWidget {
           ])
             Expanded(
               child: GestureDetector(
-                onTap: () => onChanged(m),
+                onTap: active ? () => onChanged(m) : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   alignment: Alignment.center,
@@ -968,6 +1049,96 @@ class _DialTime extends StatelessWidget {
             label!,
             style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
+      ],
+    );
+  }
+}
+
+class _HiddenTime extends StatefulWidget {
+  final bool running;
+  final String label;
+
+  const _HiddenTime({required this.running, required this.label});
+
+  @override
+  State<_HiddenTime> createState() => _HiddenTimeState();
+}
+
+class _HiddenTimeState extends State<_HiddenTime>
+    with SingleTickerProviderStateMixin {
+  static const _dotCount = 3;
+
+  late final _wave = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.running) _wave.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_HiddenTime old) {
+    super.didUpdateWidget(old);
+    if (widget.running && !_wave.isAnimating) {
+      _wave.repeat();
+    } else if (!widget.running && _wave.isAnimating) {
+      _wave.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _wave.dispose();
+    super.dispose();
+  }
+
+  /// 0.25 base opacity
+  /// increasing to 1 if wave passes dot i
+  double _opacity(int i) {
+    if (!widget.running) return 0.25;
+    final phase = (_wave.value - i / _dotCount) % 1.0;
+    return 0.25 + 0.75 * math.max(0.0, math.sin(phase * 2 * math.pi));
+  }
+
+  static const double _heightOfNumbersDisplay = 77;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: _heightOfNumbersDisplay,
+          child: AnimatedBuilder(
+            animation: _wave,
+            builder: (context, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < _dotCount; i++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Opacity(
+                      opacity: _opacity(i),
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: context.colors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        Text(
+          widget.label,
+          style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
+        ),
       ],
     );
   }

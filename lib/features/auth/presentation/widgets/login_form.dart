@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
-import 'package:paola_mobile/core/style/container.dart';
+import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/auth/data/auth_repository.dart';
 
-import '../../../../core/style/text_field.dart';
 import 'login_header.dart';
 import 'server_button.dart';
 
@@ -31,131 +30,182 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
+  Future<void> _login() async {
+    if (_loginLoading) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _loginLoading = true;
+      _loginErrorMsg = null;
+    });
+
+    try {
+      await _authRepository.login(
+        username: _usernameController.text,
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      // Back to the settings, which opened the login.
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loginErrorMsg = e.toString();
+        _loginLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        mainAxisAlignment: .center,
-        crossAxisAlignment: .start,
-        children: [
-          Spacer(),
+    final t = context.t;
+    final label = TextStyle(fontSize: 13, color: context.colors.textSecondary);
 
-          Container(
-            decoration: defaultBoxDecoration(
-              Theme.of(context).colorScheme.surfaceContainer,
-            ),
-            padding: const EdgeInsetsGeometry.all(25),
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: IntrinsicHeight(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Spacer(),
+                  const LoginHeader(),
+                  const SizedBox(height: 25),
 
-            child: Column(
-              children: [
-                LoginHeader(),
-
-                const SizedBox(height: 70),
-
-                TextFormField(
-                  controller: _usernameController,
-                  enabled: !_loginLoading,
-                  decoration: InputDecoration(
-                    labelText: context.t.loginUsername,
-                    border: defaultTextInputBorder(),
-                  ),
-                  validator: (text) {
-                    if (text == null || text.isEmpty) {
-                      return context.t.loginEnterUsername;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                TextFormField(
-                  controller: _passwordController,
-                  enabled: !_loginLoading,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: context.t.loginPassword,
-                    border: defaultTextInputBorder(),
-                  ),
-                  validator: (text) {
-                    if (text == null || text.isEmpty) {
-                      return context.t.loginEnterPassword;
-                    }
-                    return null;
-                  },
-                ),
-
-                if (_loginErrorMsg != null) ...[
+                  Text(t.loginUsername, style: label),
                   const SizedBox(height: 5),
-                  Text(
-                    _loginErrorMsg!,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                  _LoginField(
+                    controller: _usernameController,
+                    enabled: !_loginLoading,
+                    textInputAction: TextInputAction.next,
+                    validator: (text) => text == null || text.isEmpty
+                        ? t.loginEnterUsername
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(child: Text(t.loginPassword, style: label)),
+                      GestureDetector(
+                        onTap: () {
+                          //TODO mail
+                        },
+                        child: Text(
+                          t.loginForgotPassword,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 5),
-                ] else
-                  const SizedBox(height: 30),
+                  _LoginField(
+                    controller: _passwordController,
+                    enabled: !_loginLoading,
+                    obscureText: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _login(),
+                    validator: (text) => text == null || text.isEmpty
+                        ? t.loginEnterPassword
+                        : null,
+                  ),
 
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _loginLoading
-                          ? Theme.of(context).colorScheme.onSurfaceVariant
-                          : Theme.of(context).primaryColor,
-                      minimumSize: const Size(120, 55),
-                    ),
-                    onPressed: () async {
-                      if (_loginLoading) return;
-                      if (!_formKey.currentState!.validate()) return;
-
-                      setState(() {
-                        _loginLoading = true;
-                        _loginErrorMsg = null;
-                      });
-
-                      try {
-                        await _authRepository.login(
-                          username: _usernameController.text,
-                          password: _passwordController.text,
-                        );
-                        if (!context.mounted) return;
-                        // Back to the settings, which opened the login.
-                        Navigator.pop(context, true);
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        setState(() {
-                          _loginErrorMsg = e.toString();
-                          _loginLoading = false;
-                        });
-                      }
-                    },
-                    child: Text(
-                      context.t.loginButton,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
+                  if (_loginErrorMsg != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _loginErrorMsg!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.colors.error,
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+                  ],
+                  const SizedBox(height: 25),
 
-          Spacer(),
-          Center(
-            child: TextButton(
-              onPressed: () {
-                if (_loginLoading) return;
-                //TODO mail
-              },
-              child: Text(context.t.loginContact),
+                  SizedBox(
+                    width: double.infinity,
+                    child: PaolaButton(
+                      label: t.loginButton,
+                      onPressed: _loginLoading ? null : _login,
+                    ),
+                  ),
+
+                  const Spacer(),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        if (_loginLoading) return;
+                        //TODO mail
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: context.colors.link,
+                      ),
+                      child: Text(t.loginContact),
+                    ),
+                  ),
+                  Center(child: ServerButton(enabled: !_loginLoading)),
+                ],
+              ),
             ),
           ),
-          Center(child: ServerButton(enabled: !_loginLoading)),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool enabled;
+  final bool obscureText;
+  final TextInputAction textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final FormFieldValidator<String> validator;
+
+  const _LoginField({
+    required this.controller,
+    required this.enabled,
+    required this.textInputAction,
+    required this.validator,
+    this.obscureText = false,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    OutlineInputBorder border(Color color) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(PaolaRadius.control),
+      borderSide: BorderSide(color: color),
+    );
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      obscureText: obscureText,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onSubmitted,
+      validator: validator,
+      cursorColor: context.colors.primary,
+      style: TextStyle(fontSize: 15, color: context.colors.textInput),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: context.colors.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
+        enabledBorder: border(context.colors.line),
+        disabledBorder: border(context.colors.line),
+        focusedBorder: border(context.colors.primary),
+        errorBorder: border(context.colors.error),
+        focusedErrorBorder: border(context.colors.error),
       ),
     );
   }

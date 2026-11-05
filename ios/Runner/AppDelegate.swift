@@ -52,6 +52,24 @@ import ActivityKit
                   result(value)
               } else { result(nil) }
               
+          case "consumeFinishedAtMs":
+              let defaults = SharedTimerState.defaults
+              let key = "pendingFinishedAtMs"
+
+              if defaults.object(forKey: key) != nil {
+                  let value = defaults.integer(forKey: key)
+                  defaults.removeObject(forKey: key)
+                  result(value)
+              } else { result(nil) }
+
+          case "consumeBreakDiscarded":
+              let defaults = SharedTimerState.defaults
+              let key = "pendingBreakDiscarded"
+
+              let value = defaults.bool(forKey: key)
+              defaults.removeObject(forKey: key)
+              result(value)
+
           case "consumeSelfAssessmentMoodString":
               let defaults = SharedTimerState.defaults
               let key = "pendingSelfAssessmentMood"

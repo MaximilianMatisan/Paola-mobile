@@ -10,6 +10,7 @@ import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/core/util/notifications.dart';
 
 void main() async {
@@ -26,6 +27,7 @@ void main() async {
     'Loading language': AppLanguage.init,
     'Opening database': LocalDatabase.instance.init,
     'Loading settings': LocalSettings.init,
+    'Loading timer options': HideTime.init,
     'Restoring web app connection': PaolaApi.instance.init,
     'Setting up notifications': initNotifications,
   };
