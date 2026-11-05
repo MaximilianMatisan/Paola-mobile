@@ -45,3 +45,9 @@
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
 * [ ] hilfe button auf jeder seite
 * [ ] kontakt button
+
+## Funktionen
+
+### offline
+  - Lokal (`lib/core/data/local_database.dart` mit sqflite), format wie in focus_period table.
+  - kein login, außer webapp wird in settings verbunden

@@ -14,12 +14,10 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-          child: Column(
-              mainAxisAlignment: .center,
-              children: [
-                Text( 'Future settings screen' ),
-              ]
-          )
+        child: Column(
+          mainAxisAlignment: .center,
+          children: [Text('Future settings screen')],
+        ),
       ),
     );
   }

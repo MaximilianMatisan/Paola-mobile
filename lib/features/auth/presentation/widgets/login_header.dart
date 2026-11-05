@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 
@@ -27,5 +26,4 @@ class LoginHeader extends StatelessWidget {
       ],
     );
   }
-
 }
