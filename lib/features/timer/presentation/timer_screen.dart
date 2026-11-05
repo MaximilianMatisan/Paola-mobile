@@ -115,10 +115,12 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) _syncFromLiveActivity();
   }
 
-  /// Results of a Live Activity from before the app was (re)started belong
-  /// to no session; left in place they would show the rating in the next one.
+  /// A Live Activity and its results from before the app was (re)started
+  /// belong to no session; left in place the activity would stay on the lock
+  /// screen and the results would show the rating in the next one.
   Future<void> _dropStaleLiveActivityResults() async {
     if (!TimerLiveActivity.supported) return;
+    _liveActivity.endLeftovers();
     await TimerBridge.consumeSelfAssessmentMoodString();
     await TimerBridge.consumeFinishedSeconds();
     await TimerBridge.consumeFinishedAtMs();
