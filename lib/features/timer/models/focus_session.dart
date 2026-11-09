@@ -35,19 +35,23 @@ class FocusSession {
   /// What was done in the session; null if the user gave no reflection.
   final List<ActivityReflection>? reflection;
 
+  final bool hadAhaMoment;
+
   FocusSession({
     required this.start,
     required this.pomodoro,
     required this.periods,
     this.reflection,
+    this.hadAhaMoment = false,
   });
 
-  FocusSession withReflection(List<ActivityReflection>? reflection) =>
+  FocusSession withReflection(List<ActivityReflection>? reflection, {bool? hadAhaMoment}) =>
       FocusSession(
         start: start,
         pomodoro: pomodoro,
         periods: periods,
         reflection: reflection,
+        hadAhaMoment: hadAhaMoment ?? this.hadAhaMoment,
       );
 
   Duration get duration =>
@@ -60,6 +64,7 @@ class FocusSession {
     'periods': [for (final p in periods) p.toJson()],
     if (reflection case final reflection?)
       'reflection': [for (final r in reflection) r.toJson()],
+    if (hadAhaMoment) 'had_aha_moment': true,
   };
 
   factory FocusSession.fromJson(Map<String, dynamic> json) => FocusSession(
@@ -78,5 +83,6 @@ class FocusSession {
       ],
       _ => null,
     },
+    hadAhaMoment: json['had_aha_moment'] == true,
   );
 }

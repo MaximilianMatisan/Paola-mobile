@@ -190,9 +190,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     if (!mounted) return;
     switch (result.action) {
       case ReflectionAction.save:
-        _save(session.withReflection(result.reflection));
+        _save(session.withReflection(result.reflection, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.skip:
-        _save(session);
+        _save(session.withReflection(null, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.discard:
       case ReflectionAction.keepStudying:
         break;
@@ -356,9 +356,9 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         setState(() {});
         return;
       case ReflectionAction.save:
-        _save(session.withReflection(result.reflection));
+        _save(session.withReflection(result.reflection, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.skip:
-        _save(session);
+        _save(session.withReflection(null, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.discard:
         break;
     }

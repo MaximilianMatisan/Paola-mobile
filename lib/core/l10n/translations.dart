@@ -134,6 +134,7 @@ abstract class Translations {
   String get reflectionContinue;
   String get reflectionNext;
   String get reflectionSave;
+  String get reflectionAhaMoment;
   String get activityPrepareLecture;
   String get activityAttendLecture;
   String get activityReviewLecture;
@@ -334,6 +335,7 @@ class TranslationsDe extends Translations {
   final reflectionContinue = 'Weiterlernen';
   final reflectionNext = 'Weiter';
   final reflectionSave = 'Sichern';
+  final reflectionAhaMoment = 'Aha-Moment';
   final activityPrepareLecture = 'Vorlesung vorbereiten';
   final activityAttendLecture = 'Lehrveranstaltung besuchen / Video ansehen';
   final activityReviewLecture = 'Vorlesung nachbereiten';
@@ -574,6 +576,7 @@ class TranslationsEn extends Translations {
   final reflectionContinue = 'Keep studying';
   final reflectionNext = 'Next';
   final reflectionSave = 'Save';
+  final reflectionAhaMoment = 'Aha moment';
   final activityPrepareLecture = 'Prepare a lecture';
   final activityAttendLecture = 'Attend a class / watch a video';
   final activityReviewLecture = 'Review a lecture';

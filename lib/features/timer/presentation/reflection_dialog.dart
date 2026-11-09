@@ -26,8 +26,9 @@ enum ReflectionAction {
 class ReflectionResult {
   final ReflectionAction action;
   final List<ActivityReflection>? reflection;
+  final bool hadAhaMoment;
 
-  const ReflectionResult(this.action, [this.reflection]);
+  const ReflectionResult(this.action, [this.reflection, this.hadAhaMoment = false]);
 }
 
 /// Asks how the [studied] time was spent. Back button and the close icon
@@ -81,6 +82,7 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
   final _selected = <StudyActivity>{};
   final _ratings = <StudyActivity, Mood>{};
   final _seconds = <StudyActivity, int>{};
+  bool _hadAhaMoment = false;
 
   /// Selected activities in list order.
   List<StudyActivity> get _activities => [
@@ -147,6 +149,7 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
     ReflectionResult(
       action,
       action == ReflectionAction.save ? _reflection : null,
+      _hadAhaMoment,
     ),
   );
 
@@ -264,6 +267,14 @@ class _ReflectionDialogState extends State<_ReflectionDialog> {
                     : context.colors.track,
               ),
             ),
+          IconButton(
+            tooltip: context.t.reflectionAhaMoment,
+            icon: Icon(
+              _hadAhaMoment ? Icons.star : Icons.star_border,
+              color: context.colors.textPrimary,
+            ),
+            onPressed: () => setState(() => _hadAhaMoment = !_hadAhaMoment),
+          ),
           IconButton(
             tooltip: material.closeButtonTooltip,
             icon: Icon(Icons.close, color: context.colors.textPrimary),

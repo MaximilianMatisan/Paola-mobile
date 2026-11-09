@@ -42,7 +42,7 @@
 
 
 * [ ] zeiten nachtragen nicht nötig in mobile version
-* [ ] aha moment als stern pro aufgabe in popup nach timer
+* [x] aha moment als stern pro aufgabe in popup nach timer
 * [ ] aufgaben rein wie bei mathe vorkurs -> anhand der aktuellen KW herleiten welche aufgabe
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
 * [x] hilfe button auf jeder seite
@@ -52,4 +52,4 @@
 
 ### offline
   - Lokal (`lib/core/data/local_database.dart` mit sqflite), format wie in focus_period table.
-  - kein login, außer webapp wird in settings verbunden
+  - kein login und kein sync, außer webapp wird in settings verbunden

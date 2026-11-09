@@ -54,6 +54,7 @@ class LocalDatabase {
           is_pomodoro INTEGER NOT NULL,
           periods TEXT NOT NULL,
           reflection TEXT,
+          had_aha_moment INTEGER NOT NULL DEFAULT 0,
           on_server INTEGER NOT NULL DEFAULT 0,
           pending INTEGER NOT NULL DEFAULT 1,
           deleted INTEGER NOT NULL DEFAULT 0
@@ -77,6 +78,7 @@ class LocalDatabase {
       final r? => jsonEncode([for (final a in r) a.toJson()]),
       null => null,
     },
+    'had_aha_moment': s.hadAhaMoment ? 1 : 0,
   };
 
   static FocusSession _fromRow(Map<String, Object?> row) =>
@@ -88,6 +90,7 @@ class LocalDatabase {
           final String r => jsonDecode(r),
           _ => null,
         },
+        'had_aha_moment': row['had_aha_moment'] == 1,
       });
 
   /// Stores [session], replacing one with the same start, and marks it to be
