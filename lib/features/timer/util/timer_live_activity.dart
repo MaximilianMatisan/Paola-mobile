@@ -86,6 +86,15 @@ class TimerLiveActivity {
     });
   }
 
+  /// Ends activities left from an earlier app run
+  void endLeftovers() {
+    if (!supported) return;
+    _run(() async {
+      if (_activityId != null) return;
+      await _plugin.endAllActivities();
+    });
+  }
+
   void _run(Future<void> Function() action) {
     _queue = _queue.then((_) => action()).catchError((Object e) {
       debugPrint('Live Activity failed: $e');
