@@ -110,6 +110,11 @@ abstract class Translations {
   String get history;
   String yesterdayMinutes(int minutes);
 
+  // ---------- Main environment - core/navigation/main_environment.dart ----------
+  String get leaveTimerTitle;
+  String get leaveTimerMessage;
+  String get leaveAnyway;
+
   // ---------- Timer notifications - features/timer/util ----------
   String get notificationsOffApp;
   String get notificationsOffTimer;
@@ -307,6 +312,11 @@ class TranslationsDe extends Translations {
   String phoneMoved(int seconds) => 'Handy bewegt. Pause beginnt in $seconds s';
   final history = 'Verlauf';
   String yesterdayMinutes(int minutes) => 'Gestern $minutes Min';
+
+  // ---------- Hauptumgebung ----------
+  final leaveTimerTitle = 'Timer läuft noch';
+  final leaveTimerMessage = 'Der Timer läuft gerade. Am besten vermeiden, jetzt die anderen Seiten zu verwenden, der Timer läuft weiter ';
+  final leaveAnyway = 'Trotzdem wechseln';
 
   // ---------- Timer-Benachrichtigungen ----------
   final notificationsOffApp = 'Benachrichtigungen sind für Paola ausgeschaltet';
@@ -547,6 +557,11 @@ class TranslationsEn extends Translations {
   String phoneMoved(int seconds) => 'Phone moved. Pausing in $seconds s';
   final history = 'History';
   String yesterdayMinutes(int minutes) => 'Yesterday $minutes min';
+
+  // ---------- Main environment ----------
+  final leaveTimerTitle = 'Timer still running';
+  final leaveTimerMessage = 'The timer is running right now. It is best to avoid using the other pages, the timer will keep running';
+  final leaveAnyway = 'Switch anyway';
 
   // ---------- Timer notifications ----------
   final notificationsOffApp = 'Notifications are turned off for Paola';

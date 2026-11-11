@@ -33,7 +33,7 @@
 * [ ] benachrichtungen einstellungen
 * [ ] charts merge into the main branch
 * [ ] beim wieder hinlegen evtl. ohne nahcfragen wieder starten
-* [ ] pomodoro weiterlaufen lassen wenn seite verlassen mit warnung
+* [x] pomodoro weiterlaufen lassen wenn seite verlassen mit warnung
 * [ ] max mean min picked up times
 * [x] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
   * [ ] serverseitig persistieren wenn gitlab wieder geht

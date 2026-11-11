@@ -33,10 +33,10 @@ class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key, required this.onOpenHistory});
 
   @override
-  State<TimerScreen> createState() => _TimerScreenState();
+  State<TimerScreen> createState() => TimerScreenState();
 }
 
-class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
+class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _breakChoices = [0, 5, 10, 15, 20];
   static const _maxMinutes = 99;
   static const _secondChoices = [0, 30];
@@ -65,6 +65,10 @@ class _TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   late Future<Duration> _yesterday = _loadYesterday();
 
   bool get _running => _runStart != null;
+
+  /// Whether the timer is counting
+  bool get isRunning => _running;
+
   bool get _configuring =>
       !_running && _banked == Duration.zero && _blocks.isEmpty && !_onBreak;
   Duration get _phaseTotal => _onBreak
