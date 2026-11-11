@@ -315,7 +315,7 @@ class TranslationsDe extends Translations {
 
   // ---------- Hauptumgebung ----------
   final leaveTimerTitle = 'Timer läuft noch';
-  final leaveTimerMessage = 'Der Timer läuft gerade. Am besten vermeiden, jetzt die anderen Seiten zu verwenden, der Timer läuft weiter ';
+  final leaveTimerMessage = 'Der Timer läuft gerade. Am besten vermeiden andere Seiten zu verwenden während der Timer läuft. Der Timer läuft weiter ';
   final leaveAnyway = 'Trotzdem wechseln';
 
   // ---------- Timer-Benachrichtigungen ----------
