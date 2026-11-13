@@ -1,15 +1,5 @@
 # Paola mobile
 
-## Resources
-
-### Flutter
-[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications) <br>
-[live_activities](https://pub.dev/packages/live_activities) <br>
-### iOS
-[LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent)<br>
-[App Intent](https://developer.apple.com/documentation/appintents)<br>
-[User Notifications](https://developer.apple.com/documentation/usernotifications/scheduling-a-notification-locally-from-your-app)
-
 ## TODO
 
 * [ ] quelle von daten wissen -> sources tabelle oder ähnliches, erweiterbar
@@ -38,7 +28,7 @@
 * [x] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
   * [ ] serverseitig persistieren wenn gitlab wieder geht
   * [x] richtige darstellung in live activity notification
-* [ ] irgendwann erinnern wenn timer nicht angehalten -> nach 4h ?
+* [x] irgendwann erinnern wenn timer nicht angehalten -> nach 4h
 
 
 * [ ] zeiten nachtragen nicht nötig in mobile version

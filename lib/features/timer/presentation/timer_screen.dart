@@ -101,6 +101,8 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     HideTime.enabled.addListener(_onHideTimeChanged);
     _dropStaleLiveActivityResults();
+    // A reminder from before the app was (re)started belongs to no timer.
+    TimerNotification.cancelReminder();
   }
 
   @override
@@ -441,6 +443,15 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     final title = _phaseTitle;
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
+    // Counting down ends by itself; only an open-ended run can be forgotten.
+    // Not being able to remind is no reason to bother the user.
+    if (_running && !countdown) {
+      TimerNotification.scheduleReminder(
+        _runStart!.add(TimerNotification.reminderAfter),
+      ).catchError((Object _) {});
+    } else {
+      TimerNotification.cancelReminder();
+    }
     final Future<void> shown;
     if (!_running) {
       if (countdown) TimerNotification.cancelEnd(phase);

@@ -102,6 +102,8 @@ abstract class Translations {
   String get nextRound;
   String get wellDone;
   String scheduleAlertFailed(Object error);
+  String get stillRunningTitle;
+  String stillRunningBody(int hours);
   String notificationsBlockedHint(Object error);
   String lockScreenFailed(Object error);
   String get phoneResting;
@@ -302,6 +304,9 @@ class TranslationsDe extends Translations {
   final wellDone = 'Gut gemacht!';
   String scheduleAlertFailed(Object error) =>
       'Erinnerung konnte nicht geplant werden: $error';
+  final stillRunningTitle = 'Timer läuft noch';
+  String stillRunningBody(int hours) =>
+      'Dein Timer läuft seit $hours Stunden ohne Pause. Vergessen anzuhalten?';
   String notificationsBlockedHint(Object error) =>
       '$error, daher können Sperrbildschirm-Timer und Ende-Hinweis nicht '
       'angezeigt werden.';
@@ -325,7 +330,9 @@ class TranslationsDe extends Translations {
   final channelTimer = 'Lern-Timer';
   final channelTimerDesc = 'Zeigt den laufenden Timer auf dem Sperrbildschirm';
   final channelAlerts = 'Timer beendet';
-  final channelAlertsDesc = 'Hinweis, wenn ein Pomodoro oder eine Pause endet';
+  final channelAlertsDesc =
+      'Hinweis, wenn ein Pomodoro oder eine Pause endet oder der Timer '
+      'sehr lange läuft';
 
   // ---------- Selbsteinschätzung ----------
   final rateSession = 'Bewerte deine Lernsitzung!';
@@ -549,6 +556,10 @@ class TranslationsEn extends Translations {
   final wellDone = 'Well done!';
   String scheduleAlertFailed(Object error) =>
       'Could not schedule the alert: $error';
+  final stillRunningTitle = 'Timer still running';
+  String stillRunningBody(int hours) =>
+      'Your timer has been running for $hours hours without a break. '
+      'Forgot to stop it?';
   String notificationsBlockedHint(Object error) =>
       "$error, so the lock screen timer and end alert can't show.";
   String lockScreenFailed(Object error) => 'Lock screen timer failed: $error';
@@ -570,7 +581,8 @@ class TranslationsEn extends Translations {
   final channelTimer = 'Study timer';
   final channelTimerDesc = 'Shows the running timer on the lock screen';
   final channelAlerts = 'Timer finished';
-  final channelAlertsDesc = 'Alerts when a pomodoro or break is over';
+  final channelAlertsDesc =
+      'Alerts when a pomodoro or break is over or the timer runs very long';
 
   // ---------- Self assessment ----------
   final rateSession = 'Rate your study session!';

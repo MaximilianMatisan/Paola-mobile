@@ -1,7 +1,9 @@
 // Ongoing notification that mirrors the study timer on the lock screen and in the status bar for android
 // drawn by system chronometer so app doesn't have to update it every second
 //
-// When a pomodoro phase ends, a separate alert notification is shown
+// When a pomodoro phase ends, a separate alert notification is shown.
+// If a counting-up timer runs for hours, a reminder asks whether it should
+// still be running (on Android and iOS).
 
 import 'dart:io';
 
@@ -34,9 +36,17 @@ class TimerNotification {
   static const _channelId = 'study_timer';
   static const _alertChannelId = 'timer_alerts';
   static const _alertIds = {TimerPhase.work: 2, TimerPhase.breakTime: 3};
+  static const _reminderId = 4;
+
+  /// How long a timer runs without a pause before [scheduleReminder] fires.
+  static const reminderAfter = Duration(hours: 4);
   static final _plugin = FlutterLocalNotificationsPlugin();
   static const _settings = MethodChannel('paola/notification_settings');
   static bool _ready = false;
+
+  /// The plugin is set up (Android and iOS). The permission and the reminder
+  /// work on both, the rest only on Android ([_ready]).
+  static bool _initialized = false;
 
   /// TODO momentan nur für android
   static bool get supported => Platform.isAndroid;
@@ -46,18 +56,25 @@ class TimerNotification {
         AndroidFlutterLocalNotificationsPlugin
       >();
 
+  static IOSFlutterLocalNotificationsPlugin? get _ios => _plugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >();
+
   static Future<void>? _permission;
 
   /// Called once the plugin was initialized (see core/util/notifications.dart).
   static void init() {
     if (Platform.isAndroid) _ready = true;
+    _initialized = true;
   }
 
   static Future<void> requestPermission() => _permission = _requestPermission();
 
   static Future<void> _requestPermission() async {
-    if (!_ready) return;
+    if (!_initialized) return;
     await _android?.requestNotificationsPermission();
+    await _ios?.requestPermissions(alert: true, sound: true, badge: true);
   }
 
   /// Whether Android will actually show the timer notifications.
@@ -105,7 +122,9 @@ class TimerNotification {
   static Future<void> paused(String title, String time) =>
       _show(title, body: AppLanguage.t.pausedAt(time));
 
+  /// Removes the timer notification and the pending reminder.
   static Future<void> cancel() async {
+    await cancelReminder();
     if (_ready) await _plugin.cancel(id: _id);
   }
 
@@ -120,12 +139,50 @@ class TimerNotification {
     await _permission;
     // Blocked: the alarm would fire but nothing shows; [_show] reports it.
     if (await status() != NotificationStatus.allowed) return;
-    final android = _android;
+    await _schedule(_alertIds[phase]!, at, title, body);
+  }
+
+  /// Cancels the end alert of [phase], or of both phases (paused or
+  /// discarded timer).
+  static Future<void> cancelEnd([TimerPhase? phase]) async {
+    if (!_ready) return;
+    for (final p in phase == null ? TimerPhase.values : [phase]) {
+      await _plugin.cancel(id: _alertIds[p]!);
+    }
+  }
+
+  /// Asks at [at] whether the timer should still be running, in case the
+  /// user forgot to stop it. Replaces an earlier reminder.
+  static Future<void> scheduleReminder(DateTime at) async {
+    if (!_initialized || !at.isAfter(DateTime.now())) return;
+    await _permission;
+    if (await status() != NotificationStatus.allowed) return;
+    final t = AppLanguage.t;
+    await _schedule(
+      _reminderId,
+      at,
+      t.stillRunningTitle,
+      t.stillRunningBody(reminderAfter.inHours),
+    );
+  }
+
+  static Future<void> cancelReminder() async {
+    if (_initialized) await _plugin.cancel(id: _reminderId);
+  }
+
+  /// Shows an alert with sound at [at]; on iOS with the defaults set in
+  /// core/util/notifications.dart.
+  static Future<void> _schedule(
+    int id,
+    DateTime at,
+    String title,
+    String body,
+  ) async {
     // Exact alarms are granted via USE_EXACT_ALARM in the manifest; if the
     // system still refuses, the alert may arrive a little late.
-    final exact = await android?.canScheduleExactNotifications() ?? false;
+    final exact = await _android?.canScheduleExactNotifications() ?? false;
     await _plugin.zonedSchedule(
-      id: _alertIds[phase]!,
+      id: id,
       title: title,
       body: body,
       scheduledDate: tz.TZDateTime.from(at, tz.UTC),
@@ -145,15 +202,6 @@ class TimerNotification {
         ),
       ),
     );
-  }
-
-  /// Cancels the end alert of [phase], or of both phases (paused or
-  /// discarded timer).
-  static Future<void> cancelEnd([TimerPhase? phase]) async {
-    if (!_ready) return;
-    for (final p in phase == null ? TimerPhase.values : [phase]) {
-      await _plugin.cancel(id: _alertIds[p]!);
-    }
   }
 
   /// Throws if the notification can't be shown, so the caller can report it.
