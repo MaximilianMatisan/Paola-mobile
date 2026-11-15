@@ -39,7 +39,7 @@ class TimerScreen extends StatefulWidget {
 class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _breakChoices = [0, 5, 10, 15, 20];
   static const _maxMinutes = 99;
-  static const _secondChoices = [0, 30];
+  static const _secondChoices = [0, 15, 30, 45];
 
   TimerMode _mode = TimerMode.pomodoro;
   int _workSeconds = 25 * 60;
@@ -1162,7 +1162,7 @@ class _HiddenTimeState extends State<_HiddenTime>
 }
 
 /// Two-digit value on a wheel that is scrolled up and down, with the unit
-/// underneath.
+/// underneath. The wheel stops at the first and the last value.
 class _WheelSetter extends StatefulWidget {
   final List<int> values;
   final int value;
@@ -1187,8 +1187,7 @@ class _WheelSetterState extends State<_WheelSetter> {
     initialItem: math.max(widget.values.indexOf(widget.value), 0),
   );
 
-  /// The wheel loops, so its item index keeps counting past the list.
-  int get _shown => widget.values[_ctrl.selectedItem % widget.values.length];
+  int get _shown => widget.values[_ctrl.selectedItem];
 
   @override
   void didUpdateWidget(_WheelSetter old) {
@@ -1221,9 +1220,9 @@ class _WheelSetterState extends State<_WheelSetter> {
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (i) {
               HapticFeedback.selectionClick();
-              widget.onChanged(widget.values[i % widget.values.length]);
+              widget.onChanged(widget.values[i]);
             },
-            childDelegate: ListWheelChildLoopingListDelegate(
+            childDelegate: ListWheelChildListDelegate(
               children: [
                 for (final v in widget.values)
                   Center(
