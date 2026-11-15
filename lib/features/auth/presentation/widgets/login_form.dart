@@ -56,6 +56,10 @@ class _LoginFormState extends State<LoginForm> {
     }
   }
 
+  Future<void> _register() async {
+    //TODO
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
@@ -134,6 +138,35 @@ class _LoginFormState extends State<LoginForm> {
                     child: PaolaButton(
                       label: t.loginButton,
                       onPressed: _loginLoading ? null : _login,
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      const Expanded(child: Hairline()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          t.or,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Hairline()),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: PaolaButton(
+                      label: t.registerButton,
+                      style: PaolaButtonStyle.secondary,
+                      onPressed: _loginLoading ? null : _register,
                     ),
                   ),
 
