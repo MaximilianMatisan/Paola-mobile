@@ -61,6 +61,8 @@ abstract class Translations {
   String get loginEnterUsername;
   String get loginEnterPassword;
   String get loginButton;
+  String get registerButton;
+  String get or;
   String get loginContact;
   String get serverTitle;
   String serverDefault(String url);
@@ -261,6 +263,8 @@ class TranslationsDe extends Translations {
   final loginEnterUsername = 'Bitte gib deinen Benutzernamen ein';
   final loginEnterPassword = 'Bitte gib dein Passwort ein';
   final loginButton = 'Anmelden';
+  final registerButton = 'Registrieren';
+  final or = 'Oder';
   final loginContact = 'Kontakt';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
@@ -514,6 +518,8 @@ class TranslationsEn extends Translations {
   final loginEnterUsername = 'Please enter your username';
   final loginEnterPassword = 'Please enter your password';
   final loginButton = 'Log in';
+  final registerButton = 'Register';
+  final or = 'Or';
   final loginContact = 'Contact';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
