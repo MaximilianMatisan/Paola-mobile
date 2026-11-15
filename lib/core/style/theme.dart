@@ -6,8 +6,8 @@ import 'package:paola_mobile/core/style/paola_theme.dart';
 class AppTheme {
   AppTheme._();
 
-  /// Follows the system until the dark mode preference is known, then the
-  /// settings toggle.
+  /// The colour scheme picked in the settings; follows the phone's until
+  /// the user picks one, and while it is set to automatic.
   static final mode = ValueNotifier(ThemeMode.system);
 
   static ThemeData get light => _build(PaolaColors.light, Brightness.light);

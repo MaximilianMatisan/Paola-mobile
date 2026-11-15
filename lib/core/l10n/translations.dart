@@ -196,8 +196,8 @@ abstract class Translations {
   String get nickname;
   String get nicknameSaved;
   String get appearance;
-  String get darkMode;
-  String get darkModeDesc;
+  String get colorScheme;
+  String get colorSchemeDesc;
   String darkModeSaveFailed(String error);
   String get hideTime;
   String get hideTimeDesc;
@@ -428,8 +428,8 @@ class TranslationsDe extends Translations {
   final nickname = 'Spitzname';
   final nicknameSaved = 'Spitzname gespeichert';
   final appearance = 'Darstellung';
-  final darkMode = 'Dark Mode';
-  final darkModeDesc = 'Dunkles Farbschema verwenden';
+  final colorScheme = 'Farbschema';
+  final colorSchemeDesc = 'Automatisch, hell oder dunkel';
   String darkModeSaveFailed(String error) =>
       'Dark Mode konnte nicht gespeichert werden: $error';
   final hideTime = 'Zeit ausblenden';
@@ -692,8 +692,8 @@ class TranslationsEn extends Translations {
   final nickname = 'Nickname';
   final nicknameSaved = 'Nickname saved';
   final appearance = 'Appearance';
-  final darkMode = 'Dark mode';
-  final darkModeDesc = 'Use a dark color scheme';
+  final colorScheme = 'Color scheme';
+  final colorSchemeDesc = 'Automatic, light or dark';
   String darkModeSaveFailed(String error) => 'Could not save dark mode: $error';
   final hideTime = 'Hide time';
   final hideTimeDesc =
