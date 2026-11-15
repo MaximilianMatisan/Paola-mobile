@@ -46,6 +46,7 @@ dependencies:
   timezone: ^0.11.2
   sqflite: ^2.4.5
   path: ^1.9.1
+  url_launcher: ^6.3.3
 
 # 2.5.0 calls its Android code via JNI but ships no R8 keep rules, so the
 # release APK fails on startup (NoSuchMethodError in
