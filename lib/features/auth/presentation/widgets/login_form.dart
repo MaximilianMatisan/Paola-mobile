@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 import 'package:paola_mobile/features/auth/data/auth_repository.dart';
 
 import 'package:paola_mobile/features/auth/presentation/register_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'auth_field.dart';
 import '../../util/auth_layout.dart';
@@ -65,6 +67,20 @@ class _LoginFormState extends State<LoginForm> {
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const RegisterPage()));
     if (registered == true && mounted) Navigator.pop(context, true);
+  }
+
+  /// Opens an empty mail to [contactEmail] in the phone's mail app.
+  Future<void> _contact(String email) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(Uri(scheme: 'mailto', path: email));
+    } catch (_) {
+      // No mail app that could take it; reported below.
+    }
+    if (opened || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.t.contactNoMailApp(email))));
   }
 
   @override
@@ -183,18 +199,16 @@ class _LoginFormState extends State<LoginForm> {
                   ),
 
                   const Spacer(),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        if (_loginLoading) return;
-                        //TODO mail
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.colors.link,
+                  if (contactEmail case final email?)
+                    Center(
+                      child: TextButton(
+                        onPressed: _loginLoading ? null : () => _contact(email),
+                        style: TextButton.styleFrom(
+                          foregroundColor: context.colors.link,
+                        ),
+                        child: Text(t.loginContact),
                       ),
-                      child: Text(t.loginContact),
                     ),
-                  ),
                   Center(child: ServerButton(enabled: !_loginLoading)),
                 ],
               ),

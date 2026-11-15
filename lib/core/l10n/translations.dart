@@ -72,6 +72,7 @@ abstract class Translations {
   String get registerPasswordMismatch;
   String get or;
   String get loginContact;
+  String contactNoMailApp(String email);
   String get serverTitle;
   String serverDefault(String url);
   String get serverReset;
@@ -284,6 +285,8 @@ class TranslationsDe extends Translations {
   final registerPasswordMismatch = 'Die Passwörter stimmen nicht überein';
   final or = 'Oder';
   final loginContact = 'Kontakt';
+  String contactNoMailApp(String email) =>
+      'Keine Mail-App gefunden. Schreib uns an $email';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
   final serverReset = 'Zurücksetzen';
@@ -548,6 +551,8 @@ class TranslationsEn extends Translations {
   final registerPasswordMismatch = 'The passwords do not match';
   final or = 'Or';
   final loginContact = 'Contact';
+  String contactNoMailApp(String email) =>
+      'No mail app found. Write to us at $email';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
   final serverReset = 'Reset';
