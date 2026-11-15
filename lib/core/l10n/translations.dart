@@ -46,6 +46,7 @@ abstract class Translations {
   String errorNoAccess(int status);
   String errorRequest(String path, int status);
   String get errorLogin;
+  String get errorRegister;
   String get errorDeletionFailed;
 
   // ---------- Bottom bar - core/navigation/bottom_bar.dart ----------
@@ -62,6 +63,13 @@ abstract class Translations {
   String get loginEnterPassword;
   String get loginButton;
   String get registerButton;
+  String get registerWelcome;
+  String get registerPasswordRepeat;
+  String get registerCode;
+  String get registerCodeHint;
+  String get registerUsernameLength;
+  String get registerPasswordLength;
+  String get registerPasswordMismatch;
   String get or;
   String get loginContact;
   String get serverTitle;
@@ -248,6 +256,7 @@ class TranslationsDe extends Translations {
   String errorRequest(String path, int status) =>
       'Fehler bei $path (HTTP $status)';
   final errorLogin = 'Fehler bei der Anmeldung';
+  final errorRegister = 'Fehler bei der Registrierung';
   final errorDeletionFailed = 'Löschanfrage fehlgeschlagen';
 
   // ---------- Navigationsleiste ----------
@@ -264,6 +273,15 @@ class TranslationsDe extends Translations {
   final loginEnterPassword = 'Bitte gib dein Passwort ein';
   final loginButton = 'Anmelden';
   final registerButton = 'Registrieren';
+  final registerWelcome = 'Bei Paola registrieren!';
+  final registerPasswordRepeat = 'Passwort wiederholen';
+  final registerCode = 'Aktivierungscode (optional)';
+  final registerCodeHint = 'Ohne Code kommst du in den Demo-Kurs.';
+  final registerUsernameLength =
+      'Der Benutzername muss 3 bis 64 Zeichen lang sein';
+  final registerPasswordLength =
+      'Das Passwort muss mindestens 6 Zeichen lang sein';
+  final registerPasswordMismatch = 'Die Passwörter stimmen nicht überein';
   final or = 'Oder';
   final loginContact = 'Kontakt';
   final serverTitle = 'Server';
@@ -503,6 +521,7 @@ class TranslationsEn extends Translations {
   String errorRequest(String path, int status) =>
       'Error on $path (HTTP $status)';
   final errorLogin = 'Error while logging in';
+  final errorRegister = 'Error while registering';
   final errorDeletionFailed = 'Deletion request failed';
 
   // ---------- Bottom bar ----------
@@ -519,6 +538,14 @@ class TranslationsEn extends Translations {
   final loginEnterPassword = 'Please enter your password';
   final loginButton = 'Log in';
   final registerButton = 'Register';
+  final registerWelcome = 'Register for Paola!';
+  final registerPasswordRepeat = 'Repeat password';
+  final registerCode = 'Activation code (optional)';
+  final registerCodeHint = 'Without a code you join the demo course.';
+  final registerUsernameLength = 'The username must be 3 to 64 characters long';
+  final registerPasswordLength =
+      'The password must be at least 6 characters long';
+  final registerPasswordMismatch = 'The passwords do not match';
   final or = 'Or';
   final loginContact = 'Contact';
   final serverTitle = 'Server';
