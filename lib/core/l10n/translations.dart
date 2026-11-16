@@ -71,8 +71,6 @@ abstract class Translations {
   String get registerPasswordLength;
   String get registerPasswordMismatch;
   String get or;
-  String get loginContact;
-  String contactNoMailApp(String email);
   String get serverTitle;
   String serverDefault(String url);
   String get serverReset;
@@ -189,6 +187,10 @@ abstract class Translations {
   String get profile;
   String get loggedIn;
   String get savedOnDevice;
+  String get contact;
+  String get contactDesc;
+  String get contactWrite;
+  String contactNoMailApp(String email);
   String get webApp;
   String get webAppNotConnected;
   String webAppConnected(String server);
@@ -284,9 +286,6 @@ class TranslationsDe extends Translations {
       'Das Passwort muss mindestens 6 Zeichen lang sein';
   final registerPasswordMismatch = 'Die Passwörter stimmen nicht überein';
   final or = 'Oder';
-  final loginContact = 'Kontakt';
-  String contactNoMailApp(String email) =>
-      'Keine Mail-App gefunden. Schreib uns an $email';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
   final serverReset = 'Zurücksetzen';
@@ -422,6 +421,11 @@ class TranslationsDe extends Translations {
   final profile = 'Profil';
   final loggedIn = 'Angemeldet';
   final savedOnDevice = 'Auf diesem Gerät gespeichert';
+  final contact = 'Kontakt';
+  final contactDesc = 'Fragen oder Probleme? Schreib uns.';
+  final contactWrite = 'Mail';
+  String contactNoMailApp(String email) =>
+      'Keine Mail-App gefunden. Schreib uns an $email';
   final webApp = 'Web-App';
   final webAppNotConnected =
       'Nicht eingerichtet. Deine Daten bleiben auf diesem Gerät.';
@@ -550,9 +554,6 @@ class TranslationsEn extends Translations {
       'The password must be at least 6 characters long';
   final registerPasswordMismatch = 'The passwords do not match';
   final or = 'Or';
-  final loginContact = 'Contact';
-  String contactNoMailApp(String email) =>
-      'No mail app found. Write to us at $email';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
   final serverReset = 'Reset';
@@ -689,6 +690,11 @@ class TranslationsEn extends Translations {
   final profile = 'Profile';
   final loggedIn = 'Logged in';
   final savedOnDevice = 'Saved on this device';
+  final contact = 'Contact';
+  final contactDesc = 'Questions or problems? Write to us.';
+  final contactWrite = 'Mail';
+  String contactNoMailApp(String email) =>
+      'No mail app found. Write to us at $email';
   final webApp = 'Web app';
   final webAppNotConnected = 'Not set up. Your data stays on this device.';
   String webAppConnected(String server) => 'Connected to $server';

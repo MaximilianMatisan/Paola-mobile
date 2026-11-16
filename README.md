@@ -36,7 +36,7 @@
 * [ ] aufgaben rein wie bei mathe vorkurs -> anhand der aktuellen KW herleiten welche aufgabe
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
 * [x] hilfe button auf jeder seite
-* [ ] kontakt button
+* [x] kontakt button
 
 ## Funktionen
 

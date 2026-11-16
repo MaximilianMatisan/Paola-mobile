@@ -11,11 +11,13 @@ import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/auth/presentation/login_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -128,6 +130,17 @@ class _SettingsScreenState extends State<SettingsScreen>
     } finally {
       if (mounted) setState(() => _requestingDeletion = false);
     }
+  }
+
+  /// Opens an empty mail to [email] in the phone's mail app.
+  Future<void> _contact(String email) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(Uri(scheme: 'mailto', path: email));
+    } catch (_) {
+      // No mail app that could take it; reported below.
+    }
+    if (!opened) _showMessage((t) => t.contactNoMailApp(email));
   }
 
   @override
@@ -357,6 +370,29 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
               ],
             ),
+            // Only with CONTACT_EMAIL in .env.
+            if (contactEmail case final email?)
+              _Group(
+                label: t.contact,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _RowText(
+                          title: t.contact,
+                          subtitle: t.contactDesc,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      PaolaButton(
+                        label: t.contactWrite,
+                        style: PaolaButtonStyle.secondary,
+                        onPressed: () => _contact(email),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
           ],
         ),
       ),
