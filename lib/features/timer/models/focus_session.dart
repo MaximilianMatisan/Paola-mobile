@@ -45,14 +45,16 @@ class FocusSession {
     this.hadAhaMoment = false,
   });
 
-  FocusSession withReflection(List<ActivityReflection>? reflection, {bool? hadAhaMoment}) =>
-      FocusSession(
-        start: start,
-        pomodoro: pomodoro,
-        periods: periods,
-        reflection: reflection,
-        hadAhaMoment: hadAhaMoment ?? this.hadAhaMoment,
-      );
+  FocusSession withReflection(
+    List<ActivityReflection>? reflection, {
+    bool? hadAhaMoment,
+  }) => FocusSession(
+    start: start,
+    pomodoro: pomodoro,
+    periods: periods,
+    reflection: reflection,
+    hadAhaMoment: hadAhaMoment ?? this.hadAhaMoment,
+  );
 
   Duration get duration =>
       periods.fold(Duration.zero, (sum, p) => sum + p.duration);

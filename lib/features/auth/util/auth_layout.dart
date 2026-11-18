@@ -11,6 +11,7 @@ abstract final class AuthLayout {
 
   /// Above and below the "or" divider
   static const dividerGap = 15.0;
+
   /// Left and right of its text
   static const dividerTextPadding = 20.0;
 

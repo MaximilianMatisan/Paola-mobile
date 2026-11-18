@@ -1,5 +1,1 @@
-enum TimerMode {
-  stopwatch,
-  pomodoro,
-  flowtime,
-}
+enum TimerMode { stopwatch, pomodoro, flowtime }

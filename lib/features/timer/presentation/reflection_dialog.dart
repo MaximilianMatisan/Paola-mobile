@@ -28,7 +28,11 @@ class ReflectionResult {
   final List<ActivityReflection>? reflection;
   final bool hadAhaMoment;
 
-  const ReflectionResult(this.action, [this.reflection, this.hadAhaMoment = false]);
+  const ReflectionResult(
+    this.action, [
+    this.reflection,
+    this.hadAhaMoment = false,
+  ]);
 }
 
 /// Asks how the [studied] time was spent. Back button and the close icon

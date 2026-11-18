@@ -14,26 +14,27 @@ class AppTheme {
   static ThemeData get dark => _build(PaolaColors.dark, Brightness.dark);
 
   static ThemeData _build(PaolaColors colors, Brightness brightness) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: colors.primary,
-      brightness: brightness,
-    ).copyWith(
-      primary: colors.primary,
-      onPrimary: colors.onPrimary,
-      primaryContainer: colors.primaryContainer,
-      secondaryContainer: colors.primaryContainer,
-      error: colors.error,
-      onError: colors.onError,
-      errorContainer: colors.errorContainer,
-      surface: colors.surface,
-      surfaceContainer: colors.surface,
-      surfaceContainerHigh: colors.surface,
-      onSurface: colors.textPrimary,
-      onSurfaceVariant: colors.textSecondary,
-      outline: colors.border,
-      outlineVariant: colors.line,
-      scrim: colors.scrim,
-    );
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: colors.primary,
+          brightness: brightness,
+        ).copyWith(
+          primary: colors.primary,
+          onPrimary: colors.onPrimary,
+          primaryContainer: colors.primaryContainer,
+          secondaryContainer: colors.primaryContainer,
+          error: colors.error,
+          onError: colors.onError,
+          errorContainer: colors.errorContainer,
+          surface: colors.surface,
+          surfaceContainer: colors.surface,
+          surfaceContainerHigh: colors.surface,
+          onSurface: colors.textPrimary,
+          onSurfaceVariant: colors.textSecondary,
+          outline: colors.border,
+          outlineVariant: colors.line,
+          scrim: colors.scrim,
+        );
 
     return ThemeData(
       useMaterial3: true,

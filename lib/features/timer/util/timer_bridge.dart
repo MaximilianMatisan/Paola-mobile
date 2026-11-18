@@ -1,4 +1,3 @@
-
 import 'package:flutter/services.dart';
 
 class TimerBridge {
@@ -7,9 +6,9 @@ class TimerBridge {
   static Future<Map<String, dynamic>?> getState() =>
       _methodChannel.invokeMapMethod<String, dynamic>('getState');
 
-  static Future<int?> consumeFinishedSeconds() => 
+  static Future<int?> consumeFinishedSeconds() =>
       _methodChannel.invokeMethod<int>('consumeFinishedSeconds');
-  
+
   static Future<int?> consumeFinishedAtMs() =>
       _methodChannel.invokeMethod<int>('consumeFinishedAtMs');
 

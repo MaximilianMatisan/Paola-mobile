@@ -277,13 +277,19 @@ class PaolaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground) = switch (style) {
-      PaolaButtonStyle.primary => (context.colors.primary, context.colors.onPrimary),
+      PaolaButtonStyle.primary => (
+        context.colors.primary,
+        context.colors.onPrimary,
+      ),
       PaolaButtonStyle.secondary => (
         context.colors.surface,
         context.colors.textPrimary,
       ),
       PaolaButtonStyle.danger => (null, context.colors.error),
-      PaolaButtonStyle.dangerFilled => (context.colors.error, context.colors.onError),
+      PaolaButtonStyle.dangerFilled => (
+        context.colors.error,
+        context.colors.onError,
+      ),
     };
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(PaolaRadius.control),

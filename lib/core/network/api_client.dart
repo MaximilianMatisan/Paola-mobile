@@ -6,9 +6,5 @@ class ApiClient {
 
   static final ApiClient instance = ApiClient._();
 
-  final Dio dio = Dio(
-      BaseOptions(
-          baseUrl: dotenv.env['API_URL']!
-      )
-  );
+  final Dio dio = Dio(BaseOptions(baseUrl: dotenv.env['API_URL']!));
 }

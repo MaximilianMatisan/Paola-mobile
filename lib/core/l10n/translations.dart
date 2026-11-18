@@ -25,7 +25,8 @@ enum Language {
 
   int get flag => index;
 
-  static Language fromFlag(Object? flag) => flag == 1 || flag == true ? Language.en : Language.de;
+  static Language fromFlag(Object? flag) =>
+      flag == 1 || flag == true ? Language.en : Language.de;
 }
 
 abstract class Translations {
@@ -181,6 +182,19 @@ abstract class Translations {
   String get today;
   String get yesterday;
   List<String> get weekdays;
+  String get total;
+  String get currentSheet;
+  String get sheets;
+  String get sheetsCurrent;
+  String get sheetsEarlier;
+  String get sheetsUpcoming;
+  String get sheetLocked;
+  String get tasks;
+  String get noTasks;
+  String get noSheetSessions;
+  String get sessionsWithoutSheet;
+  String get noSheetsHint;
+  String sheetsUnreachable(String server);
 
   // ---------- Settings - features/settings/presentation ----------
   String get settingsTitle;
@@ -234,6 +248,9 @@ abstract class Translations {
   String get helpHistoryTitle;
   String get helpHistoryIntro;
   List<String> get helpHistoryBullets;
+  String get helpSheetTitle;
+  String get helpSheetIntro;
+  List<String> get helpSheetBullets;
   String get helpSettingsTitle;
   String get helpSettingsIntro;
   List<String> get helpSettingsBullets;
@@ -300,7 +317,8 @@ class TranslationsDe extends Translations {
   final stopwatch = 'Stoppuhr';
   final flowtime = 'Flowtime';
   final tapForBreak = 'Tippe für deine Pause';
-  final flowtimeHint = 'Lerne, solange du dich konzentrieren kannst. Die Pause richtet sich nach deiner Lernzeit: bis 25 Min → 5 Min, bis 50 Min → 8 Min, länger → 10 Min.';
+  final flowtimeHint =
+      'Lerne, solange du dich konzentrieren kannst. Die Pause richtet sich nach deiner Lernzeit: bis 25 Min → 5 Min, bis 50 Min → 8 Min, länger → 10 Min.';
   String flowtimeEarned(int minutes) => 'Pause: $minutes Min';
   final breakLabel = 'Pause';
   final breakLength = 'Pausenlänge';
@@ -344,12 +362,14 @@ class TranslationsDe extends Translations {
 
   // ---------- Hauptumgebung ----------
   final leaveTimerTitle = 'Timer läuft noch';
-  final leaveTimerMessage = 'Der Timer läuft gerade. Am besten vermeiden andere Seiten zu verwenden während der Timer läuft. Der Timer läuft weiter ';
+  final leaveTimerMessage =
+      'Der Timer läuft gerade. Am besten vermeiden andere Seiten zu verwenden während der Timer läuft. Der Timer läuft weiter ';
   final leaveAnyway = 'Trotzdem wechseln';
 
   // ---------- Timer-Benachrichtigungen ----------
   final notificationsOffApp = 'Benachrichtigungen sind für Paola ausgeschaltet';
-  final notificationsOffTimer = 'Timer-Benachrichtigungen sind für Paola ausgeschaltet';
+  final notificationsOffTimer =
+      'Timer-Benachrichtigungen sind für Paola ausgeschaltet';
   String pausedAt(String time) => 'Pausiert - $time';
   final channelTimer = 'Lern-Timer';
   final channelTimerDesc = 'Zeigt den laufenden Timer auf dem Sperrbildschirm';
@@ -363,7 +383,8 @@ class TranslationsDe extends Translations {
 
   // ---------- Reflexion ----------
   String reflectionTitle(String duration) => '$duration gelernt';
-  final reflectionActivitiesQuestion = 'Welche Aktivität(-en) hast du in dieser Lernsession durchgeführt?';
+  final reflectionActivitiesQuestion =
+      'Welche Aktivität(-en) hast du in dieser Lernsession durchgeführt?';
   String reflectionHowWent(String activity) => 'Wie lief $activity?';
   final reflectionTimeTitle = 'Zeit verteilen';
   String reflectionSum(String duration) => 'Summe: $duration';
@@ -380,7 +401,8 @@ class TranslationsDe extends Translations {
   final activityPrepareLecture = 'Vorlesung vorbereiten';
   final activityAttendLecture = 'Lehrveranstaltung besuchen / Video ansehen';
   final activityReviewLecture = 'Vorlesung nachbereiten';
-  final activityExercises = 'Übungsaufgaben bearbeiten (inkl. Hausaufgaben, Programmieren)';
+  final activityExercises =
+      'Übungsaufgaben bearbeiten (inkl. Hausaufgaben, Programmieren)';
   final activityQuizzes = 'Quizze / Selbsttests durchführen';
   final activityRepeatSummarize = 'Inhalte wiederholen und zusammenfassen';
   final activityPeerExchange = 'Mit Kommilitonen austauschen (z.B. Lerngruppe)';
@@ -397,15 +419,33 @@ class TranslationsDe extends Translations {
   final sessions = 'Sitzungen';
   final pickedUp = 'Handy aufgehoben';
   final paused = 'Pausiert';
-  String loadSessionsFailed(Object error) => 'Sitzungen konnten nicht geladen werden: $error';
+  String loadSessionsFailed(Object error) =>
+      'Sitzungen konnten nicht geladen werden: $error';
   final noSessions = 'Noch keine Sitzungen. Beendete Timer erscheinen hier.';
-  String deleteSessionMessage(String duration, String mode) => '$duration ($mode) wird aus deinem Verlauf entfernt. Das kann nicht rückgängig gemacht werden.';
+  String deleteSessionMessage(String duration, String mode) =>
+      '$duration ($mode) wird aus deinem Verlauf entfernt. Das kann nicht rückgängig gemacht werden.';
   String deletingFailed(Object error) => 'Löschen fehlgeschlagen: $error';
   final deleteSession = 'Sitzung löschen';
   final notPickedUp = 'Nicht aufgehoben';
   String pickedUpTimes(int count, String time) => '$count× aufgehoben, $time';
   final today = 'Heute';
   final yesterday = 'Gestern';
+  final total = 'Gesamt';
+  final currentSheet = 'Aktuelles Blatt';
+  final sheets = 'Übungsblätter';
+  final sheetsCurrent = 'Aktuell';
+  final sheetsEarlier = 'Frühere';
+  final sheetsUpcoming = 'Kommende';
+  final sheetLocked = 'Noch nicht freigeschaltet';
+  final tasks = 'Aufgaben';
+  final noTasks = 'Keine Aufgaben';
+  final noSheetSessions =
+      'Für dieses Blatt wurden noch keine Sitzungen aufgezeichnet.';
+  final sessionsWithoutSheet = 'Ohne Blatt';
+  final noSheetsHint =
+      'Verbinde die Web-App in den Einstellungen, um deine Übungsblätter zu sehen.';
+  String sheetsUnreachable(String server) =>
+      'Übungsblätter konnten nicht geladen werden: $server ist nicht erreichbar. Prüfe die Server-Adresse.';
   final weekdays = const [
     'Montag',
     'Dienstag',
@@ -474,7 +514,8 @@ class TranslationsDe extends Translations {
     '„Beenden und speichern“ legt die Sitzung im Verlauf ab, „Sitzung verwerfen“ löscht sie.',
   ];
   final helpStopwatchTitle = 'Stoppuhr';
-  final helpStopwatchIntro = 'Misst einfach, wie lange du lernst - ohne Zeitvorgabe und ohne Pause.';
+  final helpStopwatchIntro =
+      'Misst einfach, wie lange du lernst - ohne Zeitvorgabe und ohne Pause.';
   final helpStopwatchBullets = const [
     '„Starten“ oder auf den Kreis tippen; der Ring füllt sich einmal pro Minute.',
     'Auf den Kreis tippen, um zu pausieren oder fortzusetzen.',
@@ -482,7 +523,8 @@ class TranslationsDe extends Translations {
     '„Beenden und speichern“ legt die Sitzung im Verlauf ab, „Sitzung verwerfen“ löscht sie.',
   ];
   final helpFlowtimeTitle = 'Flowtime-Timer';
-  final helpFlowtimeIntro = 'Lernen, solange die Konzentration reicht; die Pause richtet sich nach der Lernzeit.';
+  final helpFlowtimeIntro =
+      'Lernen, solange die Konzentration reicht; die Pause richtet sich nach der Lernzeit.';
   final helpFlowtimeBullets = const [
     'Auf den Kreis tippen, um zu starten. Die Zeit läuft hoch, im Kreis steht die bis jetzt verdiente Pause.',
     'Lässt die Konzentration nach, erneut auf den Kreis tippen: Du gibst kurz an, was du gemacht hast, danach startet die Pause.',
@@ -494,12 +536,23 @@ class TranslationsDe extends Translations {
   final helpHistoryIntro = 'Deine gespeicherten Lernsitzungen.';
   final helpHistoryBullets = const [
     'Das Diagramm zeigt deine Lernzeit pro Tag in dieser Woche. Die roten Teile sind die Zeitabschnitte, wo das Handy aufgehoben wurde. Darunter die Gesamtzeit, Anzahl der Sitzungen und wie oft das Handy insgesamt aufgehoben wurde.',
+    'Darunter das aktuelle Übungsblatt mit seinen Aufgaben und den Sitzungen aus seiner Woche.',
+    'Im Menü „Übungsblätter“ öffnet ein Tipp die Seite eines Blatts. Frühere Blätter sind grau, kommende sind gesperrt.',
     'Jede Sitzung hat eine Zeitleiste: grün, solange das Handy still lag, rot, wenn es aufgehoben wurde, grau für Pausen.',
     'Mit dem Papierkorb lässt sich eine Sitzung löschen.',
     'Nach unten ziehen lädt die Liste neu.',
   ];
+  final helpSheetTitle = 'Übungsblatt';
+  final helpSheetIntro =
+      'Die Aufgaben eines Blatts und deine Sitzungen aus seiner Woche.';
+  final helpSheetBullets = const [
+    'Zu einem Blatt zählen alle Sitzungen, die in seinem Zeitraum begonnen haben.',
+    'Darüber die Gesamtzeit, Anzahl der Sitzungen und wie oft das Handy aufgehoben wurde.',
+    'Mit dem Papierkorb lässt sich eine Sitzung löschen.',
+  ];
   final helpSettingsTitle = 'Einstellungen';
-  final helpSettingsIntro = 'Profil, Darstellung und die Verbindung zur Web-App.';
+  final helpSettingsIntro =
+      'Profil, Darstellung und die Verbindung zur Web-App.';
   final helpSettingsBullets = const [
     'Spitzname ändern und speichern.',
     'Deine Daten, Dark Mode und Sprache werden auf diesem Gerät gespeichert.',
@@ -568,7 +621,8 @@ class TranslationsEn extends Translations {
   final stopwatch = 'Stopwatch';
   final flowtime = 'Flowtime';
   final tapForBreak = 'Tap to take your break';
-  final flowtimeHint = 'Study for as long as you can focus. Your break depends on how long you studied: up to 25 min → 5 min, up to 50 min → 8 min, longer → 10 min.';
+  final flowtimeHint =
+      'Study for as long as you can focus. Your break depends on how long you studied: up to 25 min → 5 min, up to 50 min → 8 min, longer → 10 min.';
   String flowtimeEarned(int minutes) => 'Break: $minutes min';
   final breakLabel = 'Break';
   final breakLength = 'Break length';
@@ -610,7 +664,8 @@ class TranslationsEn extends Translations {
 
   // ---------- Main environment ----------
   final leaveTimerTitle = 'Timer still running';
-  final leaveTimerMessage = 'The timer is running right now. It is best to avoid using the other pages, the timer will keep running';
+  final leaveTimerMessage =
+      'The timer is running right now. It is best to avoid using the other pages, the timer will keep running';
   final leaveAnyway = 'Switch anyway';
 
   // ---------- Timer notifications ----------
@@ -646,8 +701,7 @@ class TranslationsEn extends Translations {
   final activityPrepareLecture = 'Prepare a lecture';
   final activityAttendLecture = 'Attend a class / watch a video';
   final activityReviewLecture = 'Review a lecture';
-  final activityExercises =
-      'Work on exercises (incl. homework, programming)';
+  final activityExercises = 'Work on exercises (incl. homework, programming)';
   final activityQuizzes = 'Take quizzes / self-tests';
   final activityRepeatSummarize = 'Revise and summarise content';
   final activityPeerExchange = 'Talk with fellow students (study group)';
@@ -675,6 +729,21 @@ class TranslationsEn extends Translations {
   String pickedUpTimes(int count, String time) => 'Picked up $count×, $time';
   final today = 'Today';
   final yesterday = 'Yesterday';
+  final total = 'Total';
+  final currentSheet = 'Current sheet';
+  final sheets = 'Exercise sheets';
+  final sheetsCurrent = 'Current';
+  final sheetsEarlier = 'Earlier';
+  final sheetsUpcoming = 'Upcoming';
+  final sheetLocked = 'Not available yet';
+  final tasks = 'Tasks';
+  final noTasks = 'No tasks';
+  final noSheetSessions = 'No sessions recorded for this sheet yet.';
+  final sessionsWithoutSheet = 'Without sheet';
+  final noSheetsHint =
+      'Connect the web app in the settings to see your exercise sheets.';
+  String sheetsUnreachable(String server) =>
+      "Couldn't load exercise sheets: $server is not reachable. Check the server address.";
   final weekdays = const [
     'Monday',
     'Tuesday',
@@ -741,7 +810,8 @@ class TranslationsEn extends Translations {
     '"Finish and save" stores the session in your history, "Discard session" deletes it.',
   ];
   final helpStopwatchTitle = 'Stopwatch';
-  final helpStopwatchIntro = 'Simply measures how long you study, no time limit and no break.';
+  final helpStopwatchIntro =
+      'Simply measures how long you study, no time limit and no break.';
   final helpStopwatchBullets = const [
     'Tap "Start" or the circle; the ring fills once per minute.',
     'Tap the circle to pause or resume.',
@@ -749,7 +819,8 @@ class TranslationsEn extends Translations {
     '"Finish and save" stores the session in your history, "Discard session" deletes it.',
   ];
   final helpFlowtimeTitle = 'Flowtime timer';
-  final helpFlowtimeIntro = 'Study for as long as you can focus; your break depends on how long you studied.';
+  final helpFlowtimeIntro =
+      'Study for as long as you can focus; your break depends on how long you studied.';
   final helpFlowtimeBullets = const [
     'Tap the circle to start. The time counts up and the circle shows the break you have earned so far.',
     'When your focus fades, tap the circle again: you briefly note what you did, then the break starts.',
@@ -761,9 +832,18 @@ class TranslationsEn extends Translations {
   final helpHistoryIntro = 'Your saved study sessions.';
   final helpHistoryBullets = const [
     'The chart shows your study time per day this week; below it the total time, number of sessions and how often the phone was picked up.',
+    'Below that the current exercise sheet with its tasks and the sessions from its week.',
+    'In the "Exercise sheets" menu, tap a sheet to open its page. Earlier sheets are grey, upcoming ones are locked.',
     'Each session has a timeline: green while the phone lay still, red when it was picked up, grey for pauses.',
     'Use the bin icon to delete a session.',
     'Pull down to reload the list.',
+  ];
+  final helpSheetTitle = 'Exercise sheet';
+  final helpSheetIntro = "A sheet's tasks and your sessions from its week.";
+  final helpSheetBullets = const [
+    'A sheet includes every session that started within its date range.',
+    'Above them the total time, number of sessions and how often the phone was picked up.',
+    'Use the bin icon to delete a session.',
   ];
   final helpSettingsTitle = 'Settings';
   final helpSettingsIntro = 'Profile, appearance and the web app connection.';

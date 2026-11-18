@@ -20,6 +20,9 @@
 //   POST /api/focus_period/create {session_start, is_pomodoro, periods, reflection}
 //   GET  /api/focus_period/byOwner -> { sessions: [{session_start, periods, reflection}] }
 //   POST /api/focus_period/delete {session_start}
+//   GET  /api/course/myCourses -> { byRole: {student: [{id, ...}]} }
+//   GET  /api/sheet/byCourse?course_id= -> { sheets: [{id, title, valid_from, valid_until}] }
+//   GET  /api/exercise/bySheet?sheet_id= -> [{id, title, ...}]
 //
 // Login itself goes through AuthRepository (dio), which hands the session
 // cookie over via [PaolaApi.takeSessionCookie].
@@ -36,6 +39,7 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_client.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
+import 'package:paola_mobile/features/study_history/models/exercise_sheet.dart';
 import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,6 +64,10 @@ class PaolaApi {
   static const _prefsServerUrl = 'api_server_url';
   static const _basePath = '/paola';
   static const _timeout = Duration(seconds: 10);
+
+  /// For the sheet requests: a Next.js dev server compiles each API route on
+  /// its first call, which alone can take longer than [_timeout].
+  static const _slowTimeout = Duration(seconds: 30);
 
   /// Server from .env, e.g. http://localhost:3000.
   late final String defaultServerUrl;
@@ -156,10 +164,14 @@ class PaolaApi {
     await _persist();
   }
 
-  Future<dynamic> _get(String path, [Map<String, String>? query]) async {
+  Future<dynamic> _get(
+    String path, [
+    Map<String, String>? query,
+    Duration timeout = _timeout,
+  ]) async {
     final res = await http
         .get(_uri(path, query), headers: _headers)
-        .timeout(_timeout);
+        .timeout(timeout);
     if (res.statusCode == 401 || res.statusCode == 403) {
       throw ApiException(message: AppLanguage.t.errorNoAccess(res.statusCode));
     }
@@ -276,5 +288,33 @@ class PaolaApi {
     await _post('/api/focus_period/delete', {
       'session_start': session.start.millisecondsSinceEpoch,
     });
+  }
+
+  /// Exercise sheets with their tasks of all courses the user takes part in
+  /// as a student. see /api/course/myCourses, /api/sheet/byCourse and
+  /// /api/exercise/bySheet of paola web app. Requests run one after another,
+  /// the web app's database pool is small.
+  Future<List<ExerciseSheet>> sheets() async {
+    final body = await _get('/api/course/myCourses', null, _slowTimeout);
+    final courses = (body['byRole']?['student'] as List?) ?? const [];
+    final sheets = <ExerciseSheet>[];
+    for (final course in courses) {
+      final byCourse = await _get('/api/sheet/byCourse', {
+        'course_id': '${course['id']}',
+      }, _slowTimeout);
+      for (final s in (byCourse['sheets'] as List?) ?? const []) {
+        final sheet = ExerciseSheet.fromJson(s as Map<String, dynamic>);
+        final tasks = await _get('/api/exercise/bySheet', {
+          'sheet_id': '${sheet.id}',
+        }, _slowTimeout);
+        sheets.add(
+          sheet.withTasks([
+            for (final t in tasks as List)
+              SheetTask.fromJson(t as Map<String, dynamic>),
+          ]),
+        );
+      }
+    }
+    return sheets;
   }
 }
