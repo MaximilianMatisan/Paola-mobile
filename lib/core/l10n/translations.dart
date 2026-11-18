@@ -46,6 +46,7 @@ abstract class Translations {
   String errorNoAccess(int status);
   String errorRequest(String path, int status);
   String get errorLogin;
+  String get errorRegister;
   String get errorDeletionFailed;
 
   // ---------- Bottom bar - core/navigation/bottom_bar.dart ----------
@@ -61,7 +62,15 @@ abstract class Translations {
   String get loginEnterUsername;
   String get loginEnterPassword;
   String get loginButton;
-  String get loginContact;
+  String get registerButton;
+  String get registerWelcome;
+  String get registerPasswordRepeat;
+  String get registerCode;
+  String get registerCodeHint;
+  String get registerUsernameLength;
+  String get registerPasswordLength;
+  String get registerPasswordMismatch;
+  String get or;
   String get serverTitle;
   String serverDefault(String url);
   String get serverReset;
@@ -102,6 +111,8 @@ abstract class Translations {
   String get nextRound;
   String get wellDone;
   String scheduleAlertFailed(Object error);
+  String get stillRunningTitle;
+  String stillRunningBody(int hours);
   String notificationsBlockedHint(Object error);
   String lockScreenFailed(Object error);
   String get phoneResting;
@@ -109,8 +120,6 @@ abstract class Translations {
   String phoneMoved(int seconds);
   String get history;
   String yesterdayMinutes(int minutes);
-  String longRunTitle(int hours);
-  String get longRunQuestion;
 
   // ---------- Main environment - core/navigation/main_environment.dart ----------
   String get leaveTimerTitle;
@@ -178,6 +187,10 @@ abstract class Translations {
   String get profile;
   String get loggedIn;
   String get savedOnDevice;
+  String get contact;
+  String get contactDesc;
+  String get contactWrite;
+  String contactNoMailApp(String email);
   String get webApp;
   String get webAppNotConnected;
   String webAppConnected(String server);
@@ -186,8 +199,8 @@ abstract class Translations {
   String get nickname;
   String get nicknameSaved;
   String get appearance;
-  String get darkMode;
-  String get darkModeDesc;
+  String get colorScheme;
+  String get colorSchemeDesc;
   String darkModeSaveFailed(String error);
   String get hideTime;
   String get hideTimeDesc;
@@ -246,6 +259,7 @@ class TranslationsDe extends Translations {
   String errorRequest(String path, int status) =>
       'Fehler bei $path (HTTP $status)';
   final errorLogin = 'Fehler bei der Anmeldung';
+  final errorRegister = 'Fehler bei der Registrierung';
   final errorDeletionFailed = 'Löschanfrage fehlgeschlagen';
 
   // ---------- Navigationsleiste ----------
@@ -261,7 +275,17 @@ class TranslationsDe extends Translations {
   final loginEnterUsername = 'Bitte gib deinen Benutzernamen ein';
   final loginEnterPassword = 'Bitte gib dein Passwort ein';
   final loginButton = 'Anmelden';
-  final loginContact = 'Kontakt';
+  final registerButton = 'Registrieren';
+  final registerWelcome = 'Bei Paola registrieren!';
+  final registerPasswordRepeat = 'Passwort wiederholen';
+  final registerCode = 'Aktivierungscode (optional)';
+  final registerCodeHint = 'Ohne Code kommst du in den Demo-Kurs.';
+  final registerUsernameLength =
+      'Der Benutzername muss 3 bis 64 Zeichen lang sein';
+  final registerPasswordLength =
+      'Das Passwort muss mindestens 6 Zeichen lang sein';
+  final registerPasswordMismatch = 'Die Passwörter stimmen nicht überein';
+  final or = 'Oder';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Standard: $url';
   final serverReset = 'Zurücksetzen';
@@ -304,6 +328,9 @@ class TranslationsDe extends Translations {
   final wellDone = 'Gut gemacht!';
   String scheduleAlertFailed(Object error) =>
       'Erinnerung konnte nicht geplant werden: $error';
+  final stillRunningTitle = 'Timer läuft noch';
+  String stillRunningBody(int hours) =>
+      'Dein Timer läuft seit $hours Stunden ohne Pause. Vergessen anzuhalten?';
   String notificationsBlockedHint(Object error) =>
       '$error, daher können Sperrbildschirm-Timer und Ende-Hinweis nicht '
       'angezeigt werden.';
@@ -314,8 +341,6 @@ class TranslationsDe extends Translations {
   String phoneMoved(int seconds) => 'Handy bewegt. Pause beginnt in $seconds s';
   final history = 'Verlauf';
   String yesterdayMinutes(int minutes) => 'Gestern $minutes Min';
-  String longRunTitle(int hours) => 'Timer läuft seit über $hours Stunden';
-  final longRunQuestion = 'Zeichnest du gerade noch eine Aktivität auf?';
 
   // ---------- Hauptumgebung ----------
   final leaveTimerTitle = 'Timer läuft noch';
@@ -329,7 +354,9 @@ class TranslationsDe extends Translations {
   final channelTimer = 'Lern-Timer';
   final channelTimerDesc = 'Zeigt den laufenden Timer auf dem Sperrbildschirm';
   final channelAlerts = 'Timer beendet';
-  final channelAlertsDesc = 'Hinweis, wenn ein Pomodoro oder eine Pause endet';
+  final channelAlertsDesc =
+      'Hinweis, wenn ein Pomodoro oder eine Pause endet oder der Timer '
+      'sehr lange läuft';
 
   // ---------- Selbsteinschätzung ----------
   final rateSession = 'Bewerte deine Lernsitzung!';
@@ -394,6 +421,11 @@ class TranslationsDe extends Translations {
   final profile = 'Profil';
   final loggedIn = 'Angemeldet';
   final savedOnDevice = 'Auf diesem Gerät gespeichert';
+  final contact = 'Kontakt';
+  final contactDesc = 'Fragen oder Probleme? Schreib uns.';
+  final contactWrite = 'Mail';
+  String contactNoMailApp(String email) =>
+      'Keine Mail-App gefunden. Schreib uns an $email';
   final webApp = 'Web-App';
   final webAppNotConnected =
       'Nicht eingerichtet. Deine Daten bleiben auf diesem Gerät.';
@@ -403,8 +435,8 @@ class TranslationsDe extends Translations {
   final nickname = 'Spitzname';
   final nicknameSaved = 'Spitzname gespeichert';
   final appearance = 'Darstellung';
-  final darkMode = 'Dark Mode';
-  final darkModeDesc = 'Dunkles Farbschema verwenden';
+  final colorScheme = 'Farbschema';
+  final colorSchemeDesc = 'Automatisch, hell oder dunkel';
   String darkModeSaveFailed(String error) =>
       'Dark Mode konnte nicht gespeichert werden: $error';
   final hideTime = 'Zeit ausblenden';
@@ -496,6 +528,7 @@ class TranslationsEn extends Translations {
   String errorRequest(String path, int status) =>
       'Error on $path (HTTP $status)';
   final errorLogin = 'Error while logging in';
+  final errorRegister = 'Error while registering';
   final errorDeletionFailed = 'Deletion request failed';
 
   // ---------- Bottom bar ----------
@@ -511,7 +544,16 @@ class TranslationsEn extends Translations {
   final loginEnterUsername = 'Please enter your username';
   final loginEnterPassword = 'Please enter your password';
   final loginButton = 'Log in';
-  final loginContact = 'Contact';
+  final registerButton = 'Register';
+  final registerWelcome = 'Register for Paola!';
+  final registerPasswordRepeat = 'Repeat password';
+  final registerCode = 'Activation code (optional)';
+  final registerCodeHint = 'Without a code you join the demo course.';
+  final registerUsernameLength = 'The username must be 3 to 64 characters long';
+  final registerPasswordLength =
+      'The password must be at least 6 characters long';
+  final registerPasswordMismatch = 'The passwords do not match';
+  final or = 'Or';
   final serverTitle = 'Server';
   String serverDefault(String url) => 'Default: $url';
   final serverReset = 'Reset';
@@ -553,6 +595,10 @@ class TranslationsEn extends Translations {
   final wellDone = 'Well done!';
   String scheduleAlertFailed(Object error) =>
       'Could not schedule the alert: $error';
+  final stillRunningTitle = 'Timer still running';
+  String stillRunningBody(int hours) =>
+      'Your timer has been running for $hours hours without a break. '
+      'Forgot to stop it?';
   String notificationsBlockedHint(Object error) =>
       "$error, so the lock screen timer and end alert can't show.";
   String lockScreenFailed(Object error) => 'Lock screen timer failed: $error';
@@ -561,8 +607,6 @@ class TranslationsEn extends Translations {
   String phoneMoved(int seconds) => 'Phone moved. Pausing in $seconds s';
   final history = 'History';
   String yesterdayMinutes(int minutes) => 'Yesterday $minutes min';
-  String longRunTitle(int hours) => 'Timer has been running for over $hours hours';
-  final longRunQuestion = 'Are you still recording an activity?';
 
   // ---------- Main environment ----------
   final leaveTimerTitle = 'Timer still running';
@@ -576,7 +620,8 @@ class TranslationsEn extends Translations {
   final channelTimer = 'Study timer';
   final channelTimerDesc = 'Shows the running timer on the lock screen';
   final channelAlerts = 'Timer finished';
-  final channelAlertsDesc = 'Alerts when a pomodoro or break is over';
+  final channelAlertsDesc =
+      'Alerts when a pomodoro or break is over or the timer runs very long';
 
   // ---------- Self assessment ----------
   final rateSession = 'Rate your study session!';
@@ -645,6 +690,11 @@ class TranslationsEn extends Translations {
   final profile = 'Profile';
   final loggedIn = 'Logged in';
   final savedOnDevice = 'Saved on this device';
+  final contact = 'Contact';
+  final contactDesc = 'Questions or problems? Write to us.';
+  final contactWrite = 'Mail';
+  String contactNoMailApp(String email) =>
+      'No mail app found. Write to us at $email';
   final webApp = 'Web app';
   final webAppNotConnected = 'Not set up. Your data stays on this device.';
   String webAppConnected(String server) => 'Connected to $server';
@@ -653,8 +703,8 @@ class TranslationsEn extends Translations {
   final nickname = 'Nickname';
   final nicknameSaved = 'Nickname saved';
   final appearance = 'Appearance';
-  final darkMode = 'Dark mode';
-  final darkModeDesc = 'Use a dark color scheme';
+  final colorScheme = 'Color scheme';
+  final colorSchemeDesc = 'Automatic, light or dark';
   String darkModeSaveFailed(String error) => 'Could not save dark mode: $error';
   final hideTime = 'Hide time';
   final hideTimeDesc =

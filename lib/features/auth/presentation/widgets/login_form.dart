@@ -3,6 +3,10 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/features/auth/data/auth_repository.dart';
 
+import 'package:paola_mobile/features/auth/presentation/register_page.dart';
+
+import 'auth_field.dart';
+import '../../util/auth_layout.dart';
 import 'login_header.dart';
 import 'server_button.dart';
 
@@ -56,10 +60,20 @@ class _LoginFormState extends State<LoginForm> {
     }
   }
 
+  Future<void> _register() async {
+    final registered = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const RegisterPage()));
+    if (registered == true && mounted) Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final label = TextStyle(fontSize: 13, color: context.colors.textSecondary);
+    final label = TextStyle(
+      fontSize: AuthLayout.smallFontSize,
+      color: context.colors.textSecondary,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
@@ -72,12 +86,12 @@ class _LoginFormState extends State<LoginForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Spacer(),
-                  const LoginHeader(),
-                  const SizedBox(height: 25),
+                  LoginHeader(title: t.loginWelcome),
+                  const SizedBox(height: AuthLayout.sectionGap),
 
                   Text(t.loginUsername, style: label),
-                  const SizedBox(height: 5),
-                  _LoginField(
+                  const SizedBox(height: AuthLayout.labelGap),
+                  AuthField(
                     controller: _usernameController,
                     enabled: !_loginLoading,
                     textInputAction: TextInputAction.next,
@@ -85,7 +99,7 @@ class _LoginFormState extends State<LoginForm> {
                         ? t.loginEnterUsername
                         : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AuthLayout.fieldGap),
 
                   Row(
                     children: [
@@ -97,7 +111,7 @@ class _LoginFormState extends State<LoginForm> {
                         child: Text(
                           t.loginForgotPassword,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: AuthLayout.smallFontSize,
                             fontWeight: FontWeight.w500,
                             color: context.colors.primary,
                           ),
@@ -105,8 +119,8 @@ class _LoginFormState extends State<LoginForm> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
-                  _LoginField(
+                  const SizedBox(height: AuthLayout.labelGap),
+                  AuthField(
                     controller: _passwordController,
                     enabled: !_loginLoading,
                     obscureText: true,
@@ -118,16 +132,16 @@ class _LoginFormState extends State<LoginForm> {
                   ),
 
                   if (_loginErrorMsg != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AuthLayout.errorGap),
                     Text(
                       _loginErrorMsg!,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AuthLayout.smallFontSize,
                         color: context.colors.error,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 25),
+                  const SizedBox(height: AuthLayout.sectionGap),
 
                   SizedBox(
                     width: double.infinity,
@@ -137,75 +151,44 @@ class _LoginFormState extends State<LoginForm> {
                     ),
                   ),
 
-                  const Spacer(),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        if (_loginLoading) return;
-                        //TODO mail
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.colors.link,
+                  const SizedBox(height: AuthLayout.dividerGap),
+                  Row(
+                    children: [
+                      const Expanded(child: Hairline()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AuthLayout.dividerTextPadding,
+                        ),
+                        child: Text(
+                          t.or,
+                          style: TextStyle(
+                            fontSize: AuthLayout.smallFontSize,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
                       ),
-                      child: Text(t.loginContact),
+                      const Expanded(child: Hairline()),
+                    ],
+                  ),
+                  const SizedBox(height: AuthLayout.dividerGap),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: PaolaButton(
+                      label: t.registerButton,
+                      style: PaolaButtonStyle.secondary,
+                      onPressed: _loginLoading ? null : _register,
                     ),
                   ),
+
+                  const Spacer(),
                   Center(child: ServerButton(enabled: !_loginLoading)),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _LoginField extends StatelessWidget {
-  final TextEditingController controller;
-  final bool enabled;
-  final bool obscureText;
-  final TextInputAction textInputAction;
-  final ValueChanged<String>? onSubmitted;
-  final FormFieldValidator<String> validator;
-
-  const _LoginField({
-    required this.controller,
-    required this.enabled,
-    required this.textInputAction,
-    required this.validator,
-    this.obscureText = false,
-    this.onSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    OutlineInputBorder border(Color color) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(PaolaRadius.control),
-      borderSide: BorderSide(color: color),
-    );
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      obscureText: obscureText,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onSubmitted,
-      validator: validator,
-      cursorColor: context.colors.primary,
-      style: TextStyle(fontSize: 15, color: context.colors.textInput),
-      decoration: InputDecoration(
-        isDense: true,
-        filled: true,
-        fillColor: context.colors.surface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 14,
-        ),
-        enabledBorder: border(context.colors.line),
-        disabledBorder: border(context.colors.line),
-        focusedBorder: border(context.colors.primary),
-        errorBorder: border(context.colors.error),
-        focusedErrorBorder: border(context.colors.error),
       ),
     );
   }

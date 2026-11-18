@@ -10,15 +10,15 @@ Future<void> initNotifications() async {
   // Notifications are only set up for the phones (e.g. not on Linux).
   if (!Platform.isAndroid && !Platform.isIOS) return;
 
+  // TimerNotification asks on the first start.
   const DarwinInitializationSettings iOSSettings = DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestSoundPermission: true,
-    requestBadgePermission: true,
+    requestAlertPermission: false,
+    requestSoundPermission: false,
+    requestBadgePermission: false,
     defaultPresentAlert: true,
     defaultPresentSound: true,
     defaultPresentBadge: true,
   );
-  //TODO take a look at permissions for android
   const InitializationSettings initSettings = InitializationSettings(
     android: AndroidInitializationSettings('ic_stat_timer'),
     iOS: iOSSettings,

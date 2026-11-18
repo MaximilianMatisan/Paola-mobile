@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 
+import '../../util/auth_layout.dart';
+
 class LoginHeader extends StatelessWidget {
-  const LoginHeader({super.key});
+  final String title;
+
+  const LoginHeader({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      context.t.loginWelcome,
+      title,
       style: TextStyle(
-        fontSize: 26,
+        fontSize: AuthLayout.titleFontSize,
         fontWeight: FontWeight.w700,
         color: context.colors.textPrimary,
       ),

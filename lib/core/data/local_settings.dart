@@ -7,26 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 abstract final class LocalSettings {
   static const _nicknameKey = 'nickname';
-  static const _darkModeKey = 'dark_mode';
+  static const _themeModeKey = 'theme_mode';
 
   static final nickname = ValueNotifier('');
 
-  /// Restores the saved nickname and applies the saved dark mode; until the
-  /// user picks one the app follows the system.
+  /// Restores the saved nickname and applies the saved colour scheme; until
+  /// the user picks one the app follows the system.
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     nickname.value = prefs.getString(_nicknameKey) ?? '';
-    if (prefs.getBool(_darkModeKey) case final dark?) _applyDarkMode(dark);
+    final saved = prefs.getString(_themeModeKey);
+    if (saved != null) {
+      AppTheme.mode.value = ThemeMode.values.asNameMap()[saved] ?? .system;
+    }
   }
-
-  /// Whether the app is dark right now, also when it follows the system.
-  static bool get darkMode => switch (AppTheme.mode.value) {
-    ThemeMode.dark => true,
-    ThemeMode.light => false,
-    ThemeMode.system =>
-      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-          Brightness.dark,
-  };
 
   static Future<void> setNickname(String name) async {
     nickname.value = name;
@@ -34,12 +28,10 @@ abstract final class LocalSettings {
     await prefs.setString(_nicknameKey, name);
   }
 
-  static Future<void> setDarkMode(bool enabled) async {
-    _applyDarkMode(enabled);
+  /// Light, dark, or [ThemeMode.system] to follow the phone's colour scheme.
+  static Future<void> setThemeMode(ThemeMode mode) async {
+    AppTheme.mode.value = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_darkModeKey, enabled);
+    await prefs.setString(_themeModeKey, mode.name);
   }
-
-  static void _applyDarkMode(bool enabled) =>
-      AppTheme.mode.value = enabled ? ThemeMode.dark : ThemeMode.light;
 }

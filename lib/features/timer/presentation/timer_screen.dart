@@ -39,9 +39,7 @@ class TimerScreen extends StatefulWidget {
 class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _breakChoices = [0, 5, 10, 15, 20];
   static const _maxMinutes = 99;
-  static const _secondChoices = [0, 30];
-
-  static const _longRunAfter = Duration(hours: 4);
+  static const _secondChoices = [0, 15, 30, 45];
 
   TimerMode _mode = TimerMode.pomodoro;
   int _workSeconds = 25 * 60;
@@ -55,8 +53,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   Duration _banked = Duration.zero;
   DateTime? _runStart;
   Timer? _ticker;
-
-  bool _longRunWarned = false;
 
   late final _sensor = MovementSensor(onTimeout: _onPickedUp);
   final _liveActivity = TimerLiveActivity();
@@ -105,6 +101,8 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     HideTime.enabled.addListener(_onHideTimeChanged);
     _dropStaleLiveActivityResults();
+    // A reminder from before the app was (re)started belongs to no timer.
+    TimerNotification.cancelReminder();
   }
 
   @override
@@ -114,7 +112,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _ticker?.cancel();
     _sensor.dispose();
     TimerNotification.cancel();
-    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     super.dispose();
   }
@@ -282,10 +279,8 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _runStart = null;
     _banked = Duration.zero;
     _onBreak = false;
-    _longRunWarned = false;
     TimerNotification.cancel();
     if (!keepAlerts) TimerNotification.cancelEnd();
-    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     setState(() {});
   }
@@ -393,9 +388,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _runStart = null;
     _banked = Duration.zero;
     _onBreak = false;
-    _longRunWarned = false;
     TimerNotification.cancel();
-    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     setState(() {});
   }
@@ -409,7 +402,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       }
       _keepBlock();
       _banked = Duration.zero;
-      _longRunWarned = false;
       if (_breakMinutes > 0) {
         _onBreak = true;
         _start();
@@ -424,10 +416,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       );
       return;
     }
-    if (!_longRunWarned && _elapsed >= _longRunAfter) {
-      _longRunWarned = true;
-      _warnLongRun();
-    }
     setState(() {});
   }
 
@@ -436,7 +424,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _flowBreakMinutes = flowtimeBreakMinutes(_elapsed);
     _keepBlock();
     _banked = Duration.zero;
-    _longRunWarned = false;
     _onBreak = true;
     _start();
   }
@@ -446,7 +433,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     TimerNotification.cancelEnd(TimerPhase.breakTime);
     _onBreak = false;
     _banked = Duration.zero;
-    _longRunWarned = false;
     _start();
   }
 
@@ -457,6 +443,15 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     final title = _phaseTitle;
     final elapsed = _elapsed;
     final phase = _onBreak ? TimerPhase.breakTime : TimerPhase.work;
+    // Counting down ends by itself; only an open-ended run can be forgotten.
+    // Not being able to remind is no reason to bother the user.
+    if (_running && !countdown) {
+      TimerNotification.scheduleReminder(
+        _runStart!.add(TimerNotification.reminderAfter),
+      ).catchError((Object _) {});
+    } else {
+      TimerNotification.cancelReminder();
+    }
     final Future<void> shown;
     if (!_running) {
       if (countdown) TimerNotification.cancelEnd(phase);
@@ -507,20 +502,6 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
               : SnackBar(content: Text(t.lockScreenFailed(e))),
         );
     });
-  }
-
-  void _warnLongRun() {
-    final t = context.t;
-    final title = t.longRunTitle(_longRunAfter.inHours);
-    TimerNotification.longRunAlert(title, t.longRunQuestion).catchError(
-      (Object e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t.scheduleAlertFailed(e))));
-      },
-    );
-    _notify(title, t.longRunQuestion);
   }
 
   void _notify(String title, String message) {
@@ -1181,7 +1162,7 @@ class _HiddenTimeState extends State<_HiddenTime>
 }
 
 /// Two-digit value on a wheel that is scrolled up and down, with the unit
-/// underneath.
+/// underneath. The wheel stops at the first and the last value.
 class _WheelSetter extends StatefulWidget {
   final List<int> values;
   final int value;
@@ -1206,8 +1187,7 @@ class _WheelSetterState extends State<_WheelSetter> {
     initialItem: math.max(widget.values.indexOf(widget.value), 0),
   );
 
-  /// The wheel loops, so its item index keeps counting past the list.
-  int get _shown => widget.values[_ctrl.selectedItem % widget.values.length];
+  int get _shown => widget.values[_ctrl.selectedItem];
 
   @override
   void didUpdateWidget(_WheelSetter old) {
@@ -1240,9 +1220,9 @@ class _WheelSetterState extends State<_WheelSetter> {
             physics: const FixedExtentScrollPhysics(),
             onSelectedItemChanged: (i) {
               HapticFeedback.selectionClick();
-              widget.onChanged(widget.values[i % widget.values.length]);
+              widget.onChanged(widget.values[i]);
             },
-            childDelegate: ListWheelChildLoopingListDelegate(
+            childDelegate: ListWheelChildListDelegate(
               children: [
                 for (final v in widget.values)
                   Center(

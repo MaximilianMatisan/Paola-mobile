@@ -10,11 +10,14 @@ import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
+import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/core/util/constants.dart';
 import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/auth/presentation/login_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -28,7 +31,13 @@ class _SettingsScreenState extends State<SettingsScreen>
   final _api = PaolaApi.instance;
   final _nickname = TextEditingController(text: LocalSettings.nickname.value);
 
-  bool _darkMode = LocalSettings.darkMode;
+  /// In the order they are offered: automatic, light, dark.
+  static const _themeModes = [
+    ThemeMode.system,
+    ThemeMode.light,
+    ThemeMode.dark,
+  ];
+
   bool _requestingDeletion = false;
   NotificationStatus? _notifications;
 
@@ -83,9 +92,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     _showMessage((t) => t.nicknameSaved);
   }
 
-  Future<void> _setDarkMode(bool enabled) async {
-    setState(() => _darkMode = enabled);
-    await LocalSettings.setDarkMode(enabled);
+  Future<void> _setThemeMode(ThemeMode mode) async {
+    await LocalSettings.setThemeMode(mode);
+    if (mounted) setState(() {});
   }
 
   Future<void> _setLanguage(Language language) => AppLanguage.set(language);
@@ -121,6 +130,17 @@ class _SettingsScreenState extends State<SettingsScreen>
     } finally {
       if (mounted) setState(() => _requestingDeletion = false);
     }
+  }
+
+  /// Opens an empty mail to [email] in the phone's mail app.
+  Future<void> _contact(String email) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(Uri(scheme: 'mailto', path: email));
+    } catch (_) {
+      // No mail app that could take it; reported below.
+    }
+    if (!opened) _showMessage((t) => t.contactNoMailApp(email));
   }
 
   @override
@@ -209,12 +229,25 @@ class _SettingsScreenState extends State<SettingsScreen>
                   children: [
                     Expanded(
                       child: _RowText(
-                        title: t.darkMode,
-                        subtitle: t.darkModeDesc,
+                        title: t.colorScheme,
+                        subtitle: t.colorSchemeDesc,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    _Toggle(value: _darkMode, onChanged: _setDarkMode),
+                    _SegmentPicker<ThemeMode>(
+                      values: _themeModes,
+                      value: AppTheme.mode.value,
+                      onChanged: _setThemeMode,
+                      builder: (mode, color, _) => Icon(
+                        switch (mode) {
+                          ThemeMode.system => Icons.autorenew,
+                          ThemeMode.light => Icons.light_mode_outlined,
+                          ThemeMode.dark => Icons.dark_mode_outlined,
+                        },
+                        size: _SegmentPicker.iconSize,
+                        color: color,
+                      ),
+                    ),
                   ],
                 ),
                 Row(
@@ -226,9 +259,20 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    _LanguagePicker(
+                    _SegmentPicker<Language>(
+                      values: Language.values,
                       value: AppLanguage.current.value,
                       onChanged: _setLanguage,
+                      builder: (language, color, selected) => Text(
+                        language.label,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: selected
+                              ? FontWeight.w500
+                              : FontWeight.w400,
+                          color: color,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -326,6 +370,29 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
               ],
             ),
+            // Only with CONTACT_EMAIL in .env.
+            if (contactEmail case final email?)
+              _Group(
+                label: t.contact,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _RowText(
+                          title: t.contact,
+                          subtitle: t.contactDesc,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      PaolaButton(
+                        label: t.contactWrite,
+                        style: PaolaButtonStyle.secondary,
+                        onPressed: () => _contact(email),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -478,13 +545,22 @@ class _Toggle extends StatelessWidget {
   }
 }
 
-/// Segmented switch between the languages, styled like the timer's mode
-/// toggle. Each language is shown in itself, so it can always be found.
-class _LanguagePicker extends StatelessWidget {
-  final Language value;
-  final ValueChanged<Language> onChanged;
+/// Segmented switch between a few [values], styled like the timer's mode
+/// toggle. [builder] draws a value in the given colour.
+class _SegmentPicker<T> extends StatelessWidget {
+  static const iconSize = 18.0;
 
-  const _LanguagePicker({required this.value, required this.onChanged});
+  final List<T> values;
+  final T value;
+  final ValueChanged<T> onChanged;
+  final Widget Function(T value, Color color, bool selected) builder;
+
+  const _SegmentPicker({
+    required this.values,
+    required this.value,
+    required this.onChanged,
+    required this.builder,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -499,30 +575,25 @@ class _LanguagePicker extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final language in Language.values)
+          for (final option in values)
             Semantics(
-              selected: language == value,
+              selected: option == value,
               button: true,
               child: GestureDetector(
-                onTap: () => onChanged(language),
+                onTap: () => onChanged(option),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  color: language == value
+                  color: option == value
                       ? context.colors.textPrimary
                       : context.colors.surface,
-                  child: Text(
-                    language.label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: language == value
-                          ? FontWeight.w500
-                          : FontWeight.w400,
-                      color: language == value
-                          ? context.colors.onTextPrimary
-                          : context.colors.textSecondary,
-                    ),
+                  child: builder(
+                    option,
+                    option == value
+                        ? context.colors.onTextPrimary
+                        : context.colors.textSecondary,
+                    option == value,
                   ),
                 ),
               ),

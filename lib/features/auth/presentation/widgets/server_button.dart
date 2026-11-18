@@ -18,34 +18,13 @@ class _ServerButtonState extends State<ServerButton> {
   final _api = PaolaApi.instance;
 
   Future<void> _editServer() async {
-    final controller = TextEditingController(text: _api.serverUrl);
     final url = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.t.serverTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            hintText: 'http://192.168.1.20:3000',
-            helperText: context.t.serverDefault(_api.defaultServerUrl),
-          ),
-          onSubmitted: (text) => Navigator.of(context).pop(text),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(''),
-            child: Text(context.t.serverReset),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: Text(context.t.save),
-          ),
-        ],
+      builder: (context) => _ServerDialog(
+        current: _api.serverUrl,
+        defaultUrl: _api.defaultServerUrl,
       ),
     );
-    controller.dispose();
     if (url == null || !mounted) return;
     try {
       await _api.setServerUrl(url);
@@ -67,6 +46,57 @@ class _ServerButtonState extends State<ServerButton> {
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
+    );
+  }
+}
+
+/// Pops the entered URL, or '' to go back to the default server.
+///
+/// Owns its text controller: the text field is still built while the dialog
+/// animates out, so the controller must live until the dialog is gone.
+class _ServerDialog extends StatefulWidget {
+  final String current;
+  final String defaultUrl;
+
+  const _ServerDialog({required this.current, required this.defaultUrl});
+
+  @override
+  State<_ServerDialog> createState() => _ServerDialogState();
+}
+
+class _ServerDialogState extends State<_ServerDialog> {
+  late final _controller = TextEditingController(text: widget.current);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.t.serverTitle),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.url,
+        decoration: InputDecoration(
+          hintText: 'http://localhost:3000',
+          helperText: context.t.serverDefault(widget.defaultUrl),
+        ),
+        onSubmitted: (text) => Navigator.of(context).pop(text),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(''),
+          child: Text(context.t.serverReset),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(context.t.save),
+        ),
+      ],
     );
   }
 }

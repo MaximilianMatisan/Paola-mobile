@@ -1,15 +1,5 @@
 # Paola mobile
 
-## Resources
-
-### Flutter
-[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications) <br>
-[live_activities](https://pub.dev/packages/live_activities) <br>
-### iOS
-[LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent)<br>
-[App Intent](https://developer.apple.com/documentation/appintents)<br>
-[User Notifications](https://developer.apple.com/documentation/usernotifications/scheduling-a-notification-locally-from-your-app)
-
 ## TODO
 
 * [ ] quelle von daten wissen -> sources tabelle oder ähnliches, erweiterbar
@@ -38,7 +28,7 @@
 * [x] option um zeit nicht sehen zu müssen -> gamifikation, irgendwas anderes z.B. drei punkte
   * [ ] serverseitig persistieren wenn gitlab wieder geht
   * [x] richtige darstellung in live activity notification
-* [ ] irgendwann erinnern wenn timer nicht angehalten -> nach 4h ?
+* [x] irgendwann erinnern wenn timer nicht angehalten -> nach 4h
 
 
 * [ ] zeiten nachtragen nicht nötig in mobile version
@@ -46,7 +36,13 @@
 * [ ] aufgaben rein wie bei mathe vorkurs -> anhand der aktuellen KW herleiten welche aufgabe
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
 * [x] hilfe button auf jeder seite
-* [ ] kontakt button
+* [x] kontakt button
+* [ ] wechsel automatisch zu analyse tab nach timer tracking
+* [ ] stopwatch als default auswahl auf timer screen
+* [ ] sync button für timer daten
+* [ ] alle daten die nicht von heute sind einklappeb
+* [ ] durchskippen zur letzten woche auf analysetab möglich
+* [ ] daten zu tatsächlichen angegebenen anzeigen
 
 ## Funktionen
 
