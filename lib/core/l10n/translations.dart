@@ -109,6 +109,8 @@ abstract class Translations {
   String phoneMoved(int seconds);
   String get history;
   String yesterdayMinutes(int minutes);
+  String longRunTitle(int hours);
+  String get longRunQuestion;
 
   // ---------- Main environment - core/navigation/main_environment.dart ----------
   String get leaveTimerTitle;
@@ -312,6 +314,8 @@ class TranslationsDe extends Translations {
   String phoneMoved(int seconds) => 'Handy bewegt. Pause beginnt in $seconds s';
   final history = 'Verlauf';
   String yesterdayMinutes(int minutes) => 'Gestern $minutes Min';
+  String longRunTitle(int hours) => 'Timer läuft seit über $hours Stunden';
+  final longRunQuestion = 'Zeichnest du gerade noch eine Aktivität auf?';
 
   // ---------- Hauptumgebung ----------
   final leaveTimerTitle = 'Timer läuft noch';
@@ -557,6 +561,8 @@ class TranslationsEn extends Translations {
   String phoneMoved(int seconds) => 'Phone moved. Pausing in $seconds s';
   final history = 'History';
   String yesterdayMinutes(int minutes) => 'Yesterday $minutes min';
+  String longRunTitle(int hours) => 'Timer has been running for over $hours hours';
+  final longRunQuestion = 'Are you still recording an activity?';
 
   // ---------- Main environment ----------
   final leaveTimerTitle = 'Timer still running';

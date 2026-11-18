@@ -34,6 +34,7 @@ class TimerNotification {
   static const _channelId = 'study_timer';
   static const _alertChannelId = 'timer_alerts';
   static const _alertIds = {TimerPhase.work: 2, TimerPhase.breakTime: 3};
+  static const _longRunAlertId = 4;
   static final _plugin = FlutterLocalNotificationsPlugin();
   static const _settings = MethodChannel('paola/notification_settings');
   static bool _ready = false;
@@ -132,20 +133,36 @@ class TimerNotification {
       androidScheduleMode: exact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          _alertChannelId,
-          AppLanguage.t.channelAlerts,
-          channelDescription: AppLanguage.t.channelAlertsDesc,
-          importance: Importance.high,
-          priority: Priority.high,
-          visibility: NotificationVisibility.public,
-          category: AndroidNotificationCategory.alarm,
-          autoCancel: true,
-        ),
-      ),
+      notificationDetails: _alertDetails,
     );
   }
+
+  /// Immediate alert on the alerts channel, e.g. when the timer has been
+  static Future<void> longRunAlert(String title, String body) async {
+    if (!_ready) return;
+    await _permission;
+    // Blocked: the popup in the app still asks, the notification can't show
+    if (await status() != NotificationStatus.allowed) return;
+    await _plugin.show(
+      id: _longRunAlertId,
+      title: title,
+      body: body,
+      notificationDetails: _alertDetails,
+    );
+  }
+
+  static NotificationDetails get _alertDetails => NotificationDetails(
+    android: AndroidNotificationDetails(
+      _alertChannelId,
+      AppLanguage.t.channelAlerts,
+      channelDescription: AppLanguage.t.channelAlertsDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.alarm,
+      autoCancel: true,
+    ),
+  );
 
   /// Cancels the end alert of [phase], or of both phases (paused or
   /// discarded timer).
@@ -154,6 +171,11 @@ class TimerNotification {
     for (final p in phase == null ? TimerPhase.values : [phase]) {
       await _plugin.cancel(id: _alertIds[p]!);
     }
+  }
+
+  /// Cancels the over-four-hours alert, so it doesn't sit in the tray after
+  static Future<void> cancelLongRunAlert() async {
+    if (_ready) await _plugin.cancel(id: _longRunAlertId);
   }
 
   /// Throws if the notification can't be shown, so the caller can report it.

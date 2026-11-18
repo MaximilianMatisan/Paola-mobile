@@ -41,6 +41,8 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _maxMinutes = 99;
   static const _secondChoices = [0, 30];
 
+  static const _longRunAfter = Duration(hours: 4);
+
   TimerMode _mode = TimerMode.pomodoro;
   int _workSeconds = 25 * 60;
   int _breakMinutes = 5;
@@ -53,6 +55,8 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   Duration _banked = Duration.zero;
   DateTime? _runStart;
   Timer? _ticker;
+
+  bool _longRunWarned = false;
 
   late final _sensor = MovementSensor(onTimeout: _onPickedUp);
   final _liveActivity = TimerLiveActivity();
@@ -110,6 +114,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _ticker?.cancel();
     _sensor.dispose();
     TimerNotification.cancel();
+    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     super.dispose();
   }
@@ -277,8 +282,10 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _runStart = null;
     _banked = Duration.zero;
     _onBreak = false;
+    _longRunWarned = false;
     TimerNotification.cancel();
     if (!keepAlerts) TimerNotification.cancelEnd();
+    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     setState(() {});
   }
@@ -386,7 +393,9 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _runStart = null;
     _banked = Duration.zero;
     _onBreak = false;
+    _longRunWarned = false;
     TimerNotification.cancel();
+    TimerNotification.cancelLongRunAlert();
     _liveActivity.end();
     setState(() {});
   }
@@ -400,6 +409,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       }
       _keepBlock();
       _banked = Duration.zero;
+      _longRunWarned = false;
       if (_breakMinutes > 0) {
         _onBreak = true;
         _start();
@@ -414,6 +424,10 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       );
       return;
     }
+    if (!_longRunWarned && _elapsed >= _longRunAfter) {
+      _longRunWarned = true;
+      _warnLongRun();
+    }
     setState(() {});
   }
 
@@ -422,6 +436,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     _flowBreakMinutes = flowtimeBreakMinutes(_elapsed);
     _keepBlock();
     _banked = Duration.zero;
+    _longRunWarned = false;
     _onBreak = true;
     _start();
   }
@@ -431,6 +446,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     TimerNotification.cancelEnd(TimerPhase.breakTime);
     _onBreak = false;
     _banked = Duration.zero;
+    _longRunWarned = false;
     _start();
   }
 
@@ -491,6 +507,20 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
               : SnackBar(content: Text(t.lockScreenFailed(e))),
         );
     });
+  }
+
+  void _warnLongRun() {
+    final t = context.t;
+    final title = t.longRunTitle(_longRunAfter.inHours);
+    TimerNotification.longRunAlert(title, t.longRunQuestion).catchError(
+      (Object e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t.scheduleAlertFailed(e))));
+      },
+    );
+    _notify(title, t.longRunQuestion);
   }
 
   void _notify(String title, String message) {
