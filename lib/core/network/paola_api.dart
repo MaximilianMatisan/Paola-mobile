@@ -20,9 +20,10 @@
 //   POST /api/focus_period/create {session_start, is_pomodoro, periods, reflection}
 //   GET  /api/focus_period/byOwner -> { sessions: [{session_start, periods, reflection}] }
 //   POST /api/focus_period/delete {session_start}
-//   GET  /api/course/myCourses -> { byRole: {student: [{id, ...}]} }
+//   GET  /api/course/myCourses -> { courses: [{id, title, role, joined_at, ...}] }
 //   GET  /api/sheet/byCourse?course_id= -> { sheets: [{id, title, valid_from, valid_until}] }
 //   GET  /api/exercise/bySheet?sheet_id= -> [{id, title, ...}]
+//   POST /api/course/join {code} -> {success, courseId, role}
 //
 // Login itself goes through AuthRepository (dio), which hands the session
 // cookie over via [PaolaApi.takeSessionCookie].
@@ -39,7 +40,6 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/network/api_client.dart';
 import 'package:paola_mobile/core/network/api_exception.dart';
-import 'package:paola_mobile/features/study_history/models/exercise_sheet.dart';
 import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -173,11 +173,15 @@ class PaolaApi {
         .get(_uri(path, query), headers: _headers)
         .timeout(timeout);
     if (res.statusCode == 401 || res.statusCode == 403) {
-      throw ApiException(message: AppLanguage.t.errorNoAccess(res.statusCode));
+      throw ApiException(
+        message: AppLanguage.t.errorNoAccess(res.statusCode),
+        statusCode: res.statusCode,
+      );
     }
     if (res.statusCode != 200) {
       throw ApiException(
         message: AppLanguage.t.errorRequest(path, res.statusCode),
+        statusCode: res.statusCode,
       );
     }
     return jsonDecode(res.body);
@@ -188,16 +192,46 @@ class PaolaApi {
         .post(_uri(path), headers: _headers, body: jsonEncode(body))
         .timeout(_timeout);
     if (res.statusCode == 401 || res.statusCode == 403) {
-      throw ApiException(message: AppLanguage.t.errorNoAccess(res.statusCode));
+      throw ApiException(
+        message: AppLanguage.t.errorNoAccess(res.statusCode),
+        statusCode: res.statusCode,
+      );
     }
     if (res.statusCode != 200) {
       throw ApiException(
         message:
             _decode(res)?['error']?.toString() ??
             AppLanguage.t.errorRequest(path, res.statusCode),
+        statusCode: res.statusCode,
       );
     }
     return jsonDecode(res.body);
+  }
+
+  /// User id in the session cookie (a JWT signed by the web app); null if
+  /// it can't be read.
+  int? get _sessionUserId {
+    final parts = _sessionCookie?.split('.');
+    if (parts == null || parts.length != 3) return null;
+    try {
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+      return (payload['userId'] as num?)?.toInt();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Whether the session still belongs to an existing user. After the web
+  /// app's database was reset the cookie names a user that is gone: the web
+  /// app then answers as nobody (or its dev user), and joining a course
+  /// fails. Throws if the web app can't be reached.
+  Future<bool> sessionValid() async {
+    if (!loggedIn) return false;
+    final user = await currentUser();
+    final id = _sessionUserId;
+    return user != null && (id == null || user.id == id);
   }
 
   /// see /api/user/get of paola web app
@@ -290,31 +324,50 @@ class PaolaApi {
     });
   }
 
-  /// Exercise sheets with their tasks of all courses the user takes part in
-  /// as a student. see /api/course/myCourses, /api/sheet/byCourse and
-  /// /api/exercise/bySheet of paola web app. Requests run one after another,
-  /// the web app's database pool is small.
-  Future<List<ExerciseSheet>> sheets() async {
+  /// All courses the user is a member of, in any role, as the web app
+  /// sends them (course columns plus role and joined_at).
+  /// see /api/course/myCourses of paola web app
+  Future<List<Map<String, dynamic>>> courses() async {
     final body = await _get('/api/course/myCourses', null, _slowTimeout);
-    final courses = (body['byRole']?['student'] as List?) ?? const [];
-    final sheets = <ExerciseSheet>[];
-    for (final course in courses) {
-      final byCourse = await _get('/api/sheet/byCourse', {
-        'course_id': '${course['id']}',
-      }, _slowTimeout);
-      for (final s in (byCourse['sheets'] as List?) ?? const []) {
-        final sheet = ExerciseSheet.fromJson(s as Map<String, dynamic>);
-        final tasks = await _get('/api/exercise/bySheet', {
-          'sheet_id': '${sheet.id}',
-        }, _slowTimeout);
-        sheets.add(
-          sheet.withTasks([
-            for (final t in tasks as List)
-              SheetTask.fromJson(t as Map<String, dynamic>),
-          ]),
-        );
-      }
-    }
-    return sheets;
+    return [
+      for (final c in (body['courses'] as List?) ?? const [])
+        Map<String, dynamic>.from(c as Map),
+    ];
+  }
+
+  /// Rows of exercise_sheet of [courseId]. see /api/sheet/byCourse
+  Future<List<Map<String, dynamic>>> sheetsOf(int courseId) async {
+    final body = await _get('/api/sheet/byCourse', {
+      'course_id': '$courseId',
+    }, _slowTimeout);
+    return [
+      for (final s in (body['sheets'] as List?) ?? const [])
+        {...Map<String, dynamic>.from(s as Map), 'course_id': courseId},
+    ];
+  }
+
+  /// Rows of exercise of [sheetId]. see /api/exercise/bySheet
+  Future<List<Map<String, dynamic>>> exercisesOf(int sheetId) async {
+    final body = await _get('/api/exercise/bySheet', {
+      'sheet_id': '$sheetId',
+    }, _slowTimeout);
+    return [
+      for (final e in body as List)
+        {...Map<String, dynamic>.from(e as Map), 'sheet_id': sheetId},
+    ];
+  }
+
+  /// Joins the course of [code], or changes the role in it.
+  /// Throws an [ApiException] with the web app's reason if the code is
+  /// unknown, inactive, expired or used up. see /api/course/join
+  Future<({int courseId, bool alreadyMember, bool roleUpdated})> joinCourse(
+    String code,
+  ) async {
+    final body = await _post('/api/course/join', {'code': code});
+    return (
+      courseId: (body['courseId'] as num).toInt(),
+      alreadyMember: body['alreadyMember'] == true,
+      roleUpdated: body['roleUpdated'] == true,
+    );
   }
 }

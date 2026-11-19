@@ -37,12 +37,18 @@ class FocusSession {
 
   final bool hadAhaMoment;
 
+  /// The course selected when the session was recorded; null if none was
+  /// (offline-only use, or recorded before courses existed in the app).
+  /// Only kept on the device: the web app's focus_period has no course.
+  final int? courseId;
+
   FocusSession({
     required this.start,
     required this.pomodoro,
     required this.periods,
     this.reflection,
     this.hadAhaMoment = false,
+    this.courseId,
   });
 
   FocusSession withReflection(
@@ -54,6 +60,16 @@ class FocusSession {
     periods: periods,
     reflection: reflection,
     hadAhaMoment: hadAhaMoment ?? this.hadAhaMoment,
+    courseId: courseId,
+  );
+
+  FocusSession inCourse(int? courseId) => FocusSession(
+    start: start,
+    pomodoro: pomodoro,
+    periods: periods,
+    reflection: reflection,
+    hadAhaMoment: hadAhaMoment,
+    courseId: courseId,
   );
 
   Duration get duration =>

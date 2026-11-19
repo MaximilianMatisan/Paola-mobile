@@ -196,6 +196,27 @@ abstract class Translations {
   String get noSheetsHint;
   String sheetsUnreachable(String server);
 
+  // ---------- Courses - features/courses/presentation ----------
+  String get courseSwitcherPlaceholder;
+  String get courseSwitcherDemoBadge;
+  String get roleStudent;
+  String get roleTutor;
+  String get roleProf;
+  String get roleForsch;
+  String get joinCourse;
+  String get joinCourseDesc;
+  String get courseCode;
+  String get join;
+  String joinedCourse(String course);
+  String alreadyInCourse(String course);
+  String roleChanged(String course, String role);
+  String get codeNotFound;
+  String get codeInactive;
+  String get codeExpired;
+  String joinsRejected(String reasons);
+  String get webAppSessionExpired;
+  String get noSheetsInCourse;
+
   // ---------- Settings - features/settings/presentation ----------
   String get settingsTitle;
   String get profile;
@@ -446,6 +467,29 @@ class TranslationsDe extends Translations {
       'Verbinde die Web-App in den Einstellungen, um deine Übungsblätter zu sehen.';
   String sheetsUnreachable(String server) =>
       'Übungsblätter konnten nicht geladen werden: $server ist nicht erreichbar. Prüfe die Server-Adresse.';
+  final courseSwitcherPlaceholder = 'Kurs wählen';
+  final courseSwitcherDemoBadge = 'Demo';
+  final roleStudent = 'Studierende:r';
+  final roleTutor = 'Tutor:in';
+  final roleProf = 'Lehrende:r';
+  final roleForsch = 'Forschende:r';
+  final joinCourse = 'Kurs beitreten';
+  final joinCourseDesc =
+      'Mit dem Kurscode deiner Veranstaltung. Ohne Web-App trittst du auf dem Gerät bei, die Web-App übernimmt den Beitritt, sobald sie verbunden ist.';
+  final courseCode = 'Kurscode';
+  final join = 'Beitreten';
+  String joinedCourse(String course) => 'Du bist jetzt in „$course“.';
+  String alreadyInCourse(String course) => 'Du bist schon in „$course“.';
+  String roleChanged(String course, String role) =>
+      'Deine Rolle in „$course“ ist jetzt $role.';
+  final codeNotFound = 'Diesen Kurscode gibt es nicht.';
+  final codeInactive = 'Dieser Kurscode ist nicht mehr aktiv.';
+  final codeExpired = 'Dieser Kurscode ist abgelaufen.';
+  String joinsRejected(String reasons) =>
+      'Die Web-App hat Kursbeitritte abgelehnt: $reasons';
+  final webAppSessionExpired =
+      'Die Web-App kennt dein Konto nicht mehr. Bitte melde dich neu an; deine Kursbeitritte werden dann übernommen.';
+  final noSheetsInCourse = 'Für diesen Kurs gibt es noch keine Übungsblätter.';
   final weekdays = const [
     'Montag',
     'Dienstag',
@@ -535,6 +579,7 @@ class TranslationsDe extends Translations {
   final helpHistoryTitle = 'Verlauf';
   final helpHistoryIntro = 'Deine gespeicherten Lernsitzungen.';
   final helpHistoryBullets = const [
+    'Bist du in mehreren Kursen, wählst du oben rechts den Kurs. Gezeigt werden seine Übungsblätter und die Sitzungen, die du in ihm aufgezeichnet hast.',
     'Das Diagramm zeigt deine Lernzeit pro Tag in dieser Woche. Die roten Teile sind die Zeitabschnitte, wo das Handy aufgehoben wurde. Darunter die Gesamtzeit, Anzahl der Sitzungen und wie oft das Handy insgesamt aufgehoben wurde.',
     'Darunter das aktuelle Übungsblatt mit seinen Aufgaben und den Sitzungen aus seiner Woche.',
     'Im Menü „Übungsblätter“ öffnet ein Tipp die Seite eines Blatts. Frühere Blätter sind grau, kommende sind gesperrt.',
@@ -744,6 +789,29 @@ class TranslationsEn extends Translations {
       'Connect the web app in the settings to see your exercise sheets.';
   String sheetsUnreachable(String server) =>
       "Couldn't load exercise sheets: $server is not reachable. Check the server address.";
+  final courseSwitcherPlaceholder = 'Select course';
+  final courseSwitcherDemoBadge = 'Demo';
+  final roleStudent = 'Student';
+  final roleTutor = 'Tutor';
+  final roleProf = 'Lecturer';
+  final roleForsch = 'Researcher';
+  final joinCourse = 'Join a course';
+  final joinCourseDesc =
+      "With your course's code. Without the web app you join on this device; the web app takes the join over once it is connected.";
+  final courseCode = 'Course code';
+  final join = 'Join';
+  String joinedCourse(String course) => 'You are now in "$course".';
+  String alreadyInCourse(String course) => 'You are already in "$course".';
+  String roleChanged(String course, String role) =>
+      'Your role in "$course" is now $role.';
+  final codeNotFound = "This course code doesn't exist.";
+  final codeInactive = 'This course code is no longer active.';
+  final codeExpired = 'This course code has expired.';
+  String joinsRejected(String reasons) =>
+      'The web app turned down course joins: $reasons';
+  final webAppSessionExpired =
+      "The web app doesn't know your account anymore. Please log in again; your course joins are taken over then.";
+  final noSheetsInCourse = 'This course has no exercise sheets yet.';
   final weekdays = const [
     'Monday',
     'Tuesday',
@@ -831,6 +899,7 @@ class TranslationsEn extends Translations {
   final helpHistoryTitle = 'History';
   final helpHistoryIntro = 'Your saved study sessions.';
   final helpHistoryBullets = const [
+    'If you are in several courses, pick the course in the top right. Its exercise sheets and the sessions you recorded in it are shown.',
     'The chart shows your study time per day this week; below it the total time, number of sessions and how often the phone was picked up.',
     'Below that the current exercise sheet with its tasks and the sessions from its week.',
     'In the "Exercise sheets" menu, tap a sheet to open its page. Earlier sheets are grey, upcoming ones are locked.',

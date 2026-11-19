@@ -10,3 +10,7 @@ String? get contactEmail {
   final email = dotenv.maybeGet('CONTACT_EMAIL')?.trim();
   return email == null || email.isEmpty ? null : email;
 }
+
+/// The web app's fixed demo course (DEMO_COURSE_ID in utils/constants.ts):
+/// users who registered without a code see a read-only preview in it.
+const demoCourseId = 900;

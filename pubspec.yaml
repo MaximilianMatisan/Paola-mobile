@@ -79,6 +79,7 @@ flutter:
 
   assets:
     - .env
+    - assets/db/init-courses.sql
 
   fonts:
     - family: FiraSans

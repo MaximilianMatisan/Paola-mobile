@@ -10,6 +10,7 @@ import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:paola_mobile/core/navigation/main_environment.dart';
 import 'package:paola_mobile/core/network/paola_api.dart';
 import 'package:paola_mobile/core/style/theme.dart';
+import 'package:paola_mobile/features/courses/data/course_repository.dart';
 import 'package:paola_mobile/features/timer/util/hide_time.dart';
 import 'package:paola_mobile/core/util/notifications.dart';
 
@@ -29,6 +30,7 @@ void main() async {
     'Loading settings': LocalSettings.init,
     'Loading timer options': HideTime.init,
     'Restoring web app connection': PaolaApi.instance.init,
+    'Loading courses': CourseRepository.instance.init,
     'Setting up notifications': initNotifications,
   };
   for (final MapEntry(key: step, value: run) in steps.entries) {

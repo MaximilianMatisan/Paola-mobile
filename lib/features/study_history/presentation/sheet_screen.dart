@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/features/courses/data/course_repository.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
@@ -44,7 +45,9 @@ class _SheetScreenState extends State<SheetScreen> {
 
   Future<void> _load() async {
     try {
-      final all = await LocalDatabase.instance.sessions();
+      final all = await LocalDatabase.instance.sessions(
+        courseId: CourseRepository.instance.selectedCourseId.value,
+      );
       final sheet = widget.sheet;
       final sessions = sheet != null
           ? all.where(sheet.contains).toList()

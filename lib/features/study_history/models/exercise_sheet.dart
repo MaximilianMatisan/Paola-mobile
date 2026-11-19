@@ -29,6 +29,9 @@ class ExerciseSheet {
   final int id;
   final String title;
 
+  /// The course (course table of the web app) the sheet belongs to.
+  final int? courseId;
+
   /// First and last day of the sheet (local dates, time 00:00), null if the
   /// sheet has no schedule.
   final DateTime? validFrom;
@@ -39,6 +42,7 @@ class ExerciseSheet {
   const ExerciseSheet({
     required this.id,
     required this.title,
+    this.courseId,
     this.validFrom,
     this.validUntil,
     this.tasks = const [],
@@ -64,6 +68,7 @@ class ExerciseSheet {
   factory ExerciseSheet.fromJson(Map<String, dynamic> json) => ExerciseSheet(
     id: (json['id'] as num).toInt(),
     title: '${json['title'] ?? ''}',
+    courseId: (json['course_id'] as num?)?.toInt(),
     validFrom: _date(json['valid_from']),
     validUntil: _date(json['valid_until']),
     tasks: [
@@ -75,6 +80,7 @@ class ExerciseSheet {
   ExerciseSheet withTasks(List<SheetTask> tasks) => ExerciseSheet(
     id: id,
     title: title,
+    courseId: courseId,
     validFrom: validFrom,
     validUntil: validUntil,
     tasks: tasks,
@@ -83,6 +89,7 @@ class ExerciseSheet {
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
+    'course_id': courseId,
     'valid_from': _iso(validFrom),
     'valid_until': _iso(validUntil),
     'tasks': [for (final t in tasks) t.toJson()],

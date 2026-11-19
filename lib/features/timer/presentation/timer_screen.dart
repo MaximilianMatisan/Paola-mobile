@@ -13,6 +13,7 @@ import 'package:paola_mobile/core/l10n/translations.dart';
 import 'package:flutter/services.dart';
 
 import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/features/courses/data/course_repository.dart';
 import 'package:paola_mobile/features/timer/models/focus_session.dart';
 import 'package:paola_mobile/features/timer/services/movement_sensor.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
@@ -341,8 +342,12 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
     return session;
   }
 
+  /// Saves [session] under the selected course.
   void _save(FocusSession session) {
-    LocalDatabase.instance.saveSession(session).catchError((Object e) {
+    final course = CourseRepository.instance.selectedCourseId.value;
+    LocalDatabase.instance.saveSession(session.inCourse(course)).catchError((
+      Object e,
+    ) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,

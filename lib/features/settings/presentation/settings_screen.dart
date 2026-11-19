@@ -2,6 +2,8 @@
 // timer's time, check timer notifications and set up the (optional) web app
 // connection. Everything except the web app part is stored on the device.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:paola_mobile/core/data/local_settings.dart';
@@ -17,6 +19,10 @@ import 'package:paola_mobile/features/timer/util/timer_notification.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
 import 'package:paola_mobile/features/auth/presentation/login_page.dart';
+import 'package:paola_mobile/core/data/local_database.dart';
+import 'package:paola_mobile/features/courses/data/course_repository.dart';
+import 'package:paola_mobile/features/courses/models/course.dart';
+import 'package:paola_mobile/features/courses/presentation/course_switcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -30,6 +36,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   final _api = PaolaApi.instance;
   final _nickname = TextEditingController(text: LocalSettings.nickname.value);
+  final _courseCode = TextEditingController();
+  bool _joining = false;
 
   /// In the order they are offered: automatic, light, dark.
   static const _themeModes = [
@@ -45,13 +53,24 @@ class _SettingsScreenState extends State<SettingsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    CourseRepository.instance.sessionExpired.addListener(_sessionExpired);
     _loadNotificationStatus();
+  }
+
+  /// The web app no longer knows the logged in user (e.g. its database was
+  /// reset): show "not connected" and ask for a new login.
+  void _sessionExpired() {
+    if (!mounted) return;
+    setState(() {});
+    _showMessage((t) => t.webAppSessionExpired);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    CourseRepository.instance.sessionExpired.removeListener(_sessionExpired);
     _nickname.dispose();
+    _courseCode.dispose();
     super.dispose();
   }
 
@@ -105,6 +124,48 @@ class _SettingsScreenState extends State<SettingsScreen>
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const LoginPage()));
     if (mounted) setState(() {});
+    // Fills the course dropdown of the analysis tab right away and sends
+    // the courses joined on the device.
+    unawaited(
+      CourseRepository.instance.refresh().then((rejected) {
+        if (rejected.isNotEmpty) {
+          _showMessage((t) => t.joinsRejected(rejected.join(', ')));
+        }
+      }),
+    );
+  }
+
+  Future<void> _joinCourse() async {
+    final code = _courseCode.text.trim();
+    if (code.isEmpty || _joining) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _joining = true);
+    try {
+      final r = await CourseRepository.instance.join(code);
+      final title = r.course?.title ?? code;
+      if (r.message case final message?) {
+        _showMessage((_) => message);
+        return;
+      }
+      _showMessage(
+        (t) => switch (r.outcome) {
+          JoinOutcome.joined => t.joinedCourse(title),
+          JoinOutcome.alreadyMember => t.alreadyInCourse(title),
+          JoinOutcome.roleUpdated => t.roleChanged(
+            title,
+            roleLabel(r.course?.role ?? CourseRole.student, t),
+          ),
+          JoinOutcome.notFound => t.codeNotFound,
+          JoinOutcome.inactive => t.codeInactive,
+          JoinOutcome.expired => t.codeExpired,
+        },
+      );
+      if (r.course != null) _courseCode.clear();
+    } catch (e) {
+      _showMessage((t) => _errorText(e));
+    } finally {
+      if (mounted) setState(() => _joining = false);
+    }
   }
 
   /// Forgets the web app session; the data on the device stays.
@@ -206,7 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: _NicknameField(
+                      child: _TextInput(
                         controller: _nickname,
                         hint: t.nickname,
                         onSubmitted: (_) => _saveNickname(),
@@ -327,6 +388,35 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
                 ],
               ),
+            _Group(
+              label: t.joinCourse,
+              children: [
+                Text(
+                  t.joinCourseDesc,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.colors.textSecondary,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TextInput(
+                        controller: _courseCode,
+                        hint: t.courseCode,
+                        onSubmitted: (_) => _joinCourse(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PaolaButton(
+                      label: t.join,
+                      style: PaolaButtonStyle.secondary,
+                      onPressed: _joining ? null : _joinCourse,
+                    ),
+                  ],
+                ),
+              ],
+            ),
             _Group(
               label: t.webApp,
               children: [
@@ -459,12 +549,12 @@ class _RowText extends StatelessWidget {
   }
 }
 
-class _NicknameField extends StatelessWidget {
+class _TextInput extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final ValueChanged<String> onSubmitted;
 
-  const _NicknameField({
+  const _TextInput({
     required this.controller,
     required this.hint,
     required this.onSubmitted,

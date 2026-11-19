@@ -4,12 +4,16 @@
 // Which sessions belong to a sheet follows from the sheet's date range
 // (valid_from / valid_until in the web app, one calendar week per sheet).
 // Without any sheets (web app never connected) all sessions are listed.
+// With courses, the dropdown in the header picks the course: its sheets and
+// the sessions recorded in it (or without a course) are shown.
 
 import 'package:flutter/material.dart';
 import 'package:paola_mobile/core/data/local_database.dart';
 import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/widgets/page_help.dart';
+import 'package:paola_mobile/features/courses/data/course_repository.dart';
+import 'package:paola_mobile/features/courses/presentation/course_switcher.dart';
 import 'package:paola_mobile/features/study_history/data/sheet_repository.dart';
 import 'package:paola_mobile/features/study_history/models/exercise_sheet.dart';
 import 'package:paola_mobile/features/study_history/presentation/sheet_screen.dart';
@@ -38,6 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     LocalDatabase.instance.sessionsChanged.addListener(_loadSessions);
+    CourseRepository.instance.selectedCourseId.addListener(_courseChanged);
     _loadSessions();
     _loadSheets();
   }
@@ -45,14 +50,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void dispose() {
     LocalDatabase.instance.sessionsChanged.removeListener(_loadSessions);
+    CourseRepository.instance.selectedCourseId.removeListener(_courseChanged);
     super.dispose();
+  }
+
+  /// Another course was picked: its stored sheets and sessions, no fetch.
+  void _courseChanged() {
+    _loadSessions();
+    _loadSheets(refresh: false);
   }
 
   Future<void> _refresh() => Future.wait([_loadSessions(), _loadSheets()]);
 
   Future<void> _loadSessions() async {
     try {
-      final sessions = await LocalDatabase.instance.sessions();
+      final sessions = await LocalDatabase.instance.sessions(
+        courseId: CourseRepository.instance.selectedCourseId.value,
+      );
       if (mounted) {
         setState(() {
           _sessions = sessions;
@@ -72,8 +86,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   /// Sheets load on their own, so a slow web app doesn't hold up the
   /// sessions.
-  Future<void> _loadSheets() async {
-    final sheets = await SheetRepository.instance.sheets();
+  Future<void> _loadSheets({bool refresh = true}) async {
+    final sheets = await SheetRepository.instance.sheets(refresh: refresh);
     if (mounted) setState(() => _sheets = sheets);
   }
 
@@ -124,7 +138,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
               PageHelpButton.bottomSpace,
             ),
             children: [
-              ScreenTitle(context.t.history, onBack: widget.onBack),
+              Row(
+                children: [
+                  ScreenTitle(context.t.history, onBack: widget.onBack),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: CourseSwitcher(),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               GroupLabel(context.t.thisWeek),
               const SizedBox(height: 8),
@@ -170,7 +195,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ] else ...[
                 // No sheets known: all sessions, as before.
                 Text(
-                  context.t.noSheetsHint,
+                  CourseRepository.instance.selectedCourseId.value == null
+                      ? context.t.noSheetsHint
+                      : context.t.noSheetsInCourse,
                   style: TextStyle(
                     fontSize: 13,
                     color: context.colors.textSecondary,
