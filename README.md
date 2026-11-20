@@ -37,7 +37,7 @@
   * [ ] übersicht mit aktuelles blatt und aufgaben, drunter die vergangenen, wie bei https://studie.tel.ifi.lmu.de/dsb/self_assessment/sheet/23 aber drei abschnitte in drei seiten
 * [x] hilfe button auf jeder seite
 * [x] kontakt button
-* [ ] wechsel automatisch zu analyse tab nach timer tracking
+* [x] wechsel automatisch zu analyse tab nach timer tracking
 * [ ] stopwatch als default auswahl auf timer screen
 * [ ] sync button für timer daten
 * [ ] alle daten die nicht von heute sind einklappeb
