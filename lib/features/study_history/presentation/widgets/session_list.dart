@@ -8,6 +8,7 @@ import 'package:paola_mobile/core/l10n/app_language.dart';
 import 'package:paola_mobile/core/style/paola_theme.dart';
 import 'package:paola_mobile/core/widgets/delete_confirmation.dart';
 import 'package:paola_mobile/features/timer/models/focus_session.dart';
+import 'package:paola_mobile/features/timer/models/study_activity.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -256,6 +257,7 @@ class _SessionRow extends StatelessWidget {
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -276,6 +278,10 @@ class _SessionRow extends StatelessWidget {
                         color: context.colors.textSecondary,
                       ),
                     ),
+                    for (final r in session.reflection ?? const []) ...[
+                      const SizedBox(height: 6),
+                      _ActivityTag(r),
+                    ],
                   ],
                 ),
               ),
@@ -319,6 +325,41 @@ class _SessionRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ActivityTag extends StatelessWidget {
+  static const _iconSize = 20.0;
+
+  final ActivityReflection reflection;
+
+  const _ActivityTag(this.reflection);
+
+  @override
+  Widget build(BuildContext context) {
+    final mood = reflection.rating;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (mood != null) ...[
+          Icon(mood.icon, size: _iconSize, color: mood.color),
+          const SizedBox(width: 4),
+        ],
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: ShapeDecoration(
+              color: context.colors.primaryContainer,
+              shape: const StadiumBorder(),
+            ),
+            child: Text(
+              reflection.activity.label(context.t),
+              style: TextStyle(fontSize: 12, color: context.colors.link),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -42,7 +42,8 @@
 * [ ] sync button für timer daten
 * [ ] alle daten die nicht von heute sind einklappeb
 * [ ] durchskippen zur letzten woche auf analysetab möglich
-* [ ] daten zu tatsächlichen angegebenen anzeigen
+* [x] daten zu tatsächlichen angegebenen anzeigen
+  * [ ] ggf. statistiken dazu
 
 ## Funktionen
 
