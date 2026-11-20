@@ -42,7 +42,7 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
   static const _maxMinutes = 99;
   static const _secondChoices = [0, 15, 30, 45];
 
-  TimerMode _mode = TimerMode.pomodoro;
+  TimerMode _mode = TimerMode.stopwatch;
   int _workSeconds = 25 * 60;
   int _breakMinutes = 5;
   bool _onBreak = false;
@@ -925,8 +925,9 @@ class _Dot extends StatelessWidget {
   );
 }
 
-/// Pomodoro / Flowtime / Stopwatch switch. The selected mode is dark while the timer
-/// can be set up and grey/unchangeable while it runs.
+/// Stopwatch / Pomodoro / Flowtime switch, in the order of [TimerMode]. The
+/// selected mode is dark while the timer can be set up and grey/unchangeable
+/// while it runs.
 class _ModeToggle extends StatelessWidget {
   final TimerMode mode;
   final bool active;
@@ -950,11 +951,7 @@ class _ModeToggle extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
-          for (final m in const [
-            TimerMode.pomodoro,
-            TimerMode.flowtime,
-            TimerMode.stopwatch,
-          ])
+          for (final m in TimerMode.values)
             Expanded(
               child: GestureDetector(
                 onTap: active ? () => onChanged(m) : null,

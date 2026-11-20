@@ -38,7 +38,7 @@
 * [x] hilfe button auf jeder seite
 * [x] kontakt button
 * [x] wechsel automatisch zu analyse tab nach timer tracking
-* [ ] stopwatch als default auswahl auf timer screen
+* [x] stopwatch als default auswahl auf timer screen
 * [ ] sync button für timer daten
 * [ ] alle daten die nicht von heute sind einklappeb
 * [ ] durchskippen zur letzten woche auf analysetab möglich
