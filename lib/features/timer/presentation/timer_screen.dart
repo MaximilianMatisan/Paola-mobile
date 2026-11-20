@@ -209,8 +209,9 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
         _save(session.withReflection(null, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.discard:
       case ReflectionAction.keepStudying:
-        break;
+        return;
     }
+    widget.onOpenHistory();
   }
 
   String get _phaseTitle {
@@ -383,9 +384,11 @@ class TimerScreenState extends State<TimerScreen> with WidgetsBindingObserver {
       case ReflectionAction.skip:
         _save(session.withReflection(null, hadAhaMoment: result.hadAhaMoment));
       case ReflectionAction.discard:
-        break;
+        _reset();
+        return;
     }
     _reset();
+    widget.onOpenHistory();
   }
 
   /// Discarded on the lock screen: only the break ends, the blocks before it
